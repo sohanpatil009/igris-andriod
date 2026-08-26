@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">IGRIS</string>
+    <string name="accessibility_service_label">IGRIS clipboard sync</string>
+    <string name="accessibility_service_description">Detects copies made in any app and syncs them to your linked IGRIS devices. Needed for background clipboard sync on Android 10+ (the app cannot read the clipboard while it is not in focus).</string>
+    <string name="tile_sync_clipboard">Sync clipboard</string>
+    <string name="shared_to_igris">Shared to IGRIS</string>
+</resources>

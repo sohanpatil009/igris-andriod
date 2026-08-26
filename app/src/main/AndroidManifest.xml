@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!-- Android 15: connectedDevice FGS also requires holding one of the
+         "device connection" permissions (CHANGE_NETWORK_STATE/CHANGE_WIFI_STATE
+         are the LAN-relevant normal ones). -->
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- KDE-style clipboard grab: READ_LOGS (grantable via adb) powers the
+         logcat clipboard-change detector; SYSTEM_ALERT_WINDOW makes background
+         activity launches legal so the grab activity can raise itself. -->
+    <uses-permission android:name="android.permission.READ_LOGS" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- connectedDevice: no Android-14 6h/day dataSync cap, and (unlike dataSync)
+         restartable from BOOT_COMPLETED / background on Android 15. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <!-- Cross-OEM battery-optimization exemption: the single biggest lever for
+         surviving OEM freeze, and what makes the watchdog's bg FGS-start legal. -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- Restart the sync service after reboot (watchdog RestartReceiver). -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Pre-Android-10 MediaStore fallback: publish received files straight to
+         the public Downloads/IGRIS/ directory. Not needed on 29+. -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
+    <application
+        android:name=".IgrisApplication"
+        android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:theme="@style/Theme.Igris"
+        android:allowBackup="true"
+        android:supportsRtl="true">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- Share target: "Share -> IGRIS" pushes the shared text
+                 directly — no clipboard read, so it works from any app on
+                 any OEM (Android 10+ background-read workaround). -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
+
+        <!-- KDE-Connect-style clipboard grab: transparent 1x1 activity raised
+             by the a11y service to claim foreground so the clipboard becomes
+             readable (Android 10+ background-read denial). Finishes itself
+             right after reading. -->
+        <activity
+            android:name=".accessibility.ClipboardGrabActivity"
+            android:exported="false"
+            android:noHistory="true"
+            android:excludeFromRecents="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <service
+            android:name=".EcosystemService"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice"
+            android:stopWithTask="false" />
+
+        <!-- Watchdog: restarts the sync service after reboot and after the OS
+             kills/unfreezes it (AlarmManager) or the task is swiped away.
+             exported so the system can deliver BOOT_COMPLETED. -->
+        <receiver
+            android:name=".watchdog.RestartReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Notification listener (Phase 5). Stub service for now; grants the
+             BIND_NOTIFICATION_LISTENER_SERVICE binding contract. -->
+        <service
+            android:name=".notifications.IgrisNotificationListener"
+            android:exported="false"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+        <!-- Background clipboard reader: exempt from the Android 10+ focused-app
+             read restriction, so copies in any app reach the sync fan-out. -->
+        <service
+            android:name=".accessibility.IgrisClipboardAccessibilityService"
+            android:exported="false"
+            android:label="@string/accessibility_service_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
+        <!-- Quick Settings tile "Sync clipboard now": user-initiated launch
+             of the grab activity — the one trigger HyperOS cannot withhold. -->
+        <service
+            android:name=".tile.IgrisClipboardTile"
+            android:exported="true"
+            android:icon="@drawable/ic_qs_clipboard"
+            android:label="@string/tile_sync_clipboard"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+    </application>
+</manifest>

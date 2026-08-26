@@ -1,0 +1,6 @@
+<resources>
+    <style name="Theme.Igris" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/igris_background</item>
+        <item name="android:statusBarColor">@color/igris_background</item>
+    </style>
+</resources>
