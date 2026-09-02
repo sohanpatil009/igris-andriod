@@ -81,6 +81,15 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 ## Post-install setup (one-time, per device)
 
+The first-run onboarding screen (and the Settings tab afterwards) now walks
+through accessibility, **display over other apps**, notifications and
+battery in-app — no adb required for a normal install. **Display over other
+apps** is the one that's easy to miss manually: without it, the phone can
+receive a peer's clipboard push over the network but silently fails to
+actually write it (the OS drops the background activity launch with no
+exception), so sync looks one-way (phone → PC only). The equivalent adb
+incantations remain useful for headless/bulk provisioning:
+
 ```bash
 adb shell pm grant com.igris.companion android.permission.READ_LOGS
 adb shell appops set com.igris.companion SYSTEM_ALERT_WINDOW allow

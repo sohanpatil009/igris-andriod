@@ -43,4 +43,16 @@ object PermissionStatus {
         ) ?: return false
         return flat.split(':').any { it.contains("igris", ignoreCase = true) }
     }
+
+    /**
+     * SYSTEM_ALERT_WINDOW ("display over other apps"). Required for
+     * [com.igris.companion.accessibility.ClipboardSetActivity] to raise itself
+     * from the background: unlike the accessibility service (which gets an
+     * automatic background-activity-launch exemption), the Rust core calls
+     * into `setText()` from a plain background thread. Without this
+     * permission, the OS silently drops the activity launch (no exception),
+     * so a peer's clipboard push arrives over the network but never actually
+     * reaches this device's clipboard — the one-way PC-to-phone sync failure.
+     */
+    fun overlayGranted(context: Context): Boolean = Settings.canDrawOverlays(context)
 }

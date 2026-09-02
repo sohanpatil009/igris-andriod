@@ -70,6 +70,16 @@
             android:taskAffinity=""
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
+        <!-- Transparent activity for setting clipboard from background (Android 10+
+             SecurityException workaround). Same pattern as ClipboardGrabActivity. -->
+        <activity
+            android:name=".accessibility.ClipboardSetActivity"
+            android:exported="false"
+            android:noHistory="true"
+            android:excludeFromRecents="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
         <service
             android:name=".EcosystemService"
             android:exported="false"

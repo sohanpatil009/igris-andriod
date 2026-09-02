@@ -1,6 +1,7 @@
 package com.igris.companion.ui.tabs
 
 import android.content.Intent
+import android.net.Uri
 import android.provider.Settings
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,11 +34,13 @@ fun SettingsTab() {
     val context = LocalContext.current
     var deviceId by remember { mutableStateOf("") }
     var a11yEnabled by remember { mutableStateOf(false) }
+    var overlayGranted by remember { mutableStateOf(false) }
     var batteryUnrestricted by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         deviceId = withContext(Dispatchers.IO) { IdentityStore.get(context).deviceId }
         while (true) {
             a11yEnabled = PermissionStatus.accessibilityEnabled(context)
+            overlayGranted = PermissionStatus.overlayGranted(context)
             batteryUnrestricted = PermissionStatus.batteryUnrestricted(context)
             delay(2000)
         }
@@ -78,6 +81,35 @@ fun SettingsTab() {
                 )
             }) {
                 Text(if (a11yEnabled) "Accessibility: ON (tap to open)" else "Enable accessibility")
+            }
+        }
+
+        Text(
+            "Receiving clipboard from your other devices",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(top = 24.dp),
+        )
+        Text(
+            "Without \"display over other apps\", IGRIS can read and send your " +
+                "clipboard fine, but can't apply clipboard content pushed *from* your " +
+                "PC or other devices while running in the background — sync will look " +
+                "like it only works one way.",
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(top = 4.dp),
+        )
+        Row(Modifier.fillMaxWidth().padding(top = 12.dp)) {
+            Button(onClick = {
+                context.startActivity(
+                    Intent(
+                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:${context.packageName}"),
+                    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                )
+            }) {
+                Text(
+                    if (overlayGranted) "Display over other apps: ON"
+                    else "Enable display over other apps"
+                )
             }
         }
 

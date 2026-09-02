@@ -35,8 +35,52 @@ class PlatformProviders(context: Context) {
         }
 
         override fun setText(text: String) {
-            val cm = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager
-            cm?.setPrimaryClip(android.content.ClipData.newPlainText("IGRIS", text))
+            Log.d("IGRIS", "setText called: ${text.take(32)}...")
+
+            // Foreground: a direct write is always legal on Android 10+ and
+            // skips the activity round-trip entirely.
+            if (com.igris.companion.ForegroundState.isForeground) {
+                val cm = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager
+                try {
+                    cm?.setPrimaryClip(android.content.ClipData.newPlainText("IGRIS", text))
+                    Log.d("IGRIS", "setText: direct write OK (foreground)")
+                    return
+                } catch (e: Exception) {
+                    Log.e("IGRIS", "setText: direct write failed while foreground: $e")
+                    // Fall through to the activity path below.
+                }
+            }
+
+            // Backgrounded: setPrimaryClip() throws SecurityException on
+            // Android 10+, so raise ClipboardSetActivity to claim foreground
+            // first. That's a background *activity launch*, which the OS
+            // silently drops (no exception at all) unless SYSTEM_ALERT_WINDOW
+            // is granted. Surface that case loudly — otherwise this looks
+            // like a silent no-op on the receiving side, which is exactly
+            // what made PC-to-phone clipboard sync look broken while
+            // phone-to-PC (routed through the accessibility service, which
+            // gets an automatic background-launch exemption) kept working.
+            if (!android.provider.Settings.canDrawOverlays(ctx)) {
+                Log.e(
+                    "IGRIS",
+                    "setText: backgrounded and SYSTEM_ALERT_WINDOW not granted \u2014 " +
+                        "ClipboardSetActivity launch will likely be dropped by the OS. " +
+                        "Grant \"display over other apps\" in Settings for incoming " +
+                        "clipboard sync to work.",
+                )
+            }
+            try {
+                com.igris.companion.accessibility.ClipboardSetActivity.setClipboard(ctx, text)
+            } catch (e: Exception) {
+                Log.e("IGRIS", "setText via activity failed: $e")
+                // Last-ditch fallback: works only if the app happens to be foreground.
+                val cm = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager
+                try {
+                    cm?.setPrimaryClip(android.content.ClipData.newPlainText("IGRIS", text))
+                } catch (e2: Exception) {
+                    Log.e("IGRIS", "setText fallback also failed: $e2")
+                }
+            }
         }
     }
 

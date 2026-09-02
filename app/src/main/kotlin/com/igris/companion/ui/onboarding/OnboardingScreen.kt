@@ -2,6 +2,7 @@ package com.igris.companion.ui.onboarding
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
@@ -74,12 +75,14 @@ fun OnboardingScreen(
 ) {
     val context = LocalContext.current
     var a11y by remember { mutableStateOf(PermissionStatus.accessibilityEnabled(context)) }
+    var overlay by remember { mutableStateOf(PermissionStatus.overlayGranted(context)) }
     var battery by remember { mutableStateOf(PermissionStatus.batteryUnrestricted(context)) }
     var notifs by remember { mutableStateOf(PermissionStatus.notificationsGranted(context)) }
 
     LaunchedEffect(Unit) {
         while (true) {
             a11y = PermissionStatus.accessibilityEnabled(context)
+            overlay = PermissionStatus.overlayGranted(context)
             battery = PermissionStatus.batteryUnrestricted(context)
             notifs = PermissionStatus.notificationsGranted(context)
             delay(1200)
@@ -119,6 +122,27 @@ fun OnboardingScreen(
 
         PermissionCard(
             index = 2,
+            title = "Display over other apps",
+            required = true,
+            description = "Lets IGRIS apply clipboard content sent *from* your other " +
+                "devices while running in the background. Without this, sync only " +
+                "works one-way (this phone to your PC) — pushes from the PC arrive " +
+                "over the network but silently fail to land on this phone's clipboard.",
+            granted = overlay,
+            actionLabel = "Allow",
+            note = "Find IGRIS and enable \"Allow display over other apps\", then tap Back.",
+            onAction = {
+                context.startActivity(
+                    Intent(
+                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:${context.packageName}"),
+                    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                )
+            },
+        )
+
+        PermissionCard(
+            index = 3,
             title = "Unrestricted battery",
             required = false,
             description = "Stops your phone from freezing IGRIS after the screen turns " +
@@ -130,7 +154,7 @@ fun OnboardingScreen(
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             PermissionCard(
-                index = 3,
+                index = 4,
                 title = "Notifications",
                 required = false,
                 description = "Shows the ongoing \"sync is running\" status so the OS keeps " +
@@ -143,7 +167,7 @@ fun OnboardingScreen(
 
         if (OemPower.hasOemAutostart()) {
             PermissionCard(
-                index = 4,
+                index = 5,
                 title = "Autostart (${OemPower.oemLabel()})",
                 required = false,
                 description = "Lets IGRIS relaunch after a reboot and start in the " +
@@ -157,10 +181,11 @@ fun OnboardingScreen(
 
         Spacer(Modifier.height(8.dp))
 
-        if (!a11y) {
+        if (!a11y || !overlay) {
             Text(
-                "Clipboard sync won't work until accessibility is enabled above. " +
-                    "You can still continue and turn it on later.",
+                "Clipboard sync won't fully work until both permissions above are " +
+                    "granted — accessibility for sending, \"display over other apps\" for " +
+                    "receiving. You can still continue and turn them on later.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.padding(bottom = 8.dp),
@@ -171,7 +196,7 @@ fun OnboardingScreen(
             onClick = onDone,
             modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
         ) {
-            Text(if (a11y) "Start using IGRIS" else "Skip for now")
+            Text(if (a11y && overlay) "Start using IGRIS" else "Skip for now")
         }
     }
 }
