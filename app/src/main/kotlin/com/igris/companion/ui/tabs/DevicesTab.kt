@@ -26,7 +26,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.ui.platform.LocalContext
 import com.igris.companion.node.NodeHolder
+import com.igris.companion.permissions.PermissionStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -41,6 +45,11 @@ import uniffi.igris_protocol.DeviceInfo
 @Composable
 fun DevicesTab() {
     var devices by remember { mutableStateOf<List<DeviceInfo>>(emptyList()) }
+    var manualIp by remember { mutableStateOf("") }
+    // replica BUG-002/003 + fix4: name the broken toggle instead of silent one-way sync.
+    var a11yOn by remember { mutableStateOf(true) }
+    var overlayOn by remember { mutableStateOf(true) }
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
 
@@ -57,6 +66,8 @@ fun DevicesTab() {
     LaunchedEffect(Unit) {
         while (true) {
             devices = withContext(Dispatchers.IO) { NodeHolder.node?.getDevices() ?: emptyList() }
+            a11yOn = PermissionStatus.accessibilityEnabled(context)
+            overlayOn = PermissionStatus.overlayGranted(context)
             delay(3000)
         }
     }
@@ -67,6 +78,58 @@ fun DevicesTab() {
         Text(
             "Discovered on your LAN via the 30s eco subnet scan.",
             style = MaterialTheme.typography.bodySmall,
+        )
+        // replica fix4: one-way sync warnings (was silent drop).
+        if (!a11yOn) {
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+            ) {
+                Text(
+                    "Background copy is off: accessibility service disabled (HyperOS turns it off on every update). Re-enable it, or use the Sync tile.",
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(12.dp),
+                )
+            }
+        }
+        if (!overlayOn) {
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+            ) {
+                Text(
+                    "One-way sync risk: Display over other apps denied, so PC copies can't land here. Grant it in Settings.",
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(12.dp),
+                )
+            }
+        }
+        // replica fix2: manual IP fallback when auto-scan finds nothing.
+        Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedTextField(
+                value = manualIp,
+                onValueChange = { manualIp = it },
+                label = { Text("Manual IP, e.g. 192.168.1.42") },
+                singleLine = true,
+                modifier = Modifier.weight(1f),
+            )
+            Button(onClick = {
+                val ip = manualIp.trim()
+                if (ip.isEmpty()) {
+                    scope.launch { snackbar.showSnackbar("Enter a LAN IP first") }
+                } else {
+                    scope.launch(Dispatchers.IO) {
+                        NodeHolder.node?.let { report("pair", runCatching { it.pair(ip) }) }
+                    }
+                }
+            }) {
+                Text("LINK")
+            }
+        }
+        Text(
+            "Same Wi-Fi? VPNs and guest networks hide devices.",
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(top = 4.dp),
         )
         if (devices.isEmpty()) {
             Text(
