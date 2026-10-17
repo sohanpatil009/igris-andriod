@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -37,8 +38,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.igris.companion.node.NodeHolder
+import com.igris.companion.ui.FadeSlideInCard
+import com.igris.companion.ui.SectionHeader
+import com.igris.companion.ui.theme.IgrisTokens
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -143,7 +148,7 @@ fun TransfersTab() {
     }
 
     Column(Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Transfers", style = MaterialTheme.typography.titleLarge)
+        SectionHeader("FILE SHARE")
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
             Button(
                 enabled = !sending,
@@ -197,47 +202,73 @@ fun TransfersTab() {
 
 @Composable
 private fun PendingCard(t: IncomingTransfer, onAccept: () -> Unit, onDeny: () -> Unit) {
-    Card(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+    FadeSlideInCard {
+    Card(
+        Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, IgrisTokens.Pending.copy(alpha = 0.35f)),
+    ) {
         Column(Modifier.padding(12.dp)) {
             Text(
                 "Incoming from ${t.senderName}",
                 style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             Text(
                 "${t.fileCount} file(s), ${formatSize(t.totalSize)} — ${t.files.joinToString(", ")}",
                 style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 4.dp),
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
             )
             Row(Modifier.padding(top = 8.dp)) {
                 Button(onClick = onAccept) { Text("Accept") }
                 Spacer(Modifier.width(8.dp))
-                OutlinedButton(onClick = onDeny) { Text("Deny") }
+                OutlinedButton(
+                    onClick = onDeny,
+                    colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+                        contentColor = IgrisTokens.Danger,
+                    ),
+                ) { Text("Deny") }
             }
         }
+    }
     }
 }
 
 @Composable
 private fun ActiveCard(p: TransferProgressInfo) {
-    Card(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+    FadeSlideInCard {
+    Card(
+        Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    ) {
         Column(Modifier.padding(12.dp)) {
             val dir = if (p.isOutbound) "Sending" else "Receiving"
             Text(
                 "$dir — ${p.fileNames.joinToString(", ")}",
                 style = MaterialTheme.typography.titleMedium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
             )
             Spacer(Modifier.height(6.dp))
             LinearProgressIndicator(
                 progress = { (p.overallPercent / 100.0).toFloat().coerceIn(0f, 1f) },
                 modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant,
             )
             Text(
                 "${formatSize(p.transferredBytes)} / ${formatSize(p.totalBytes)} " +
                     "(${p.overallPercent.toInt()}%)" + if (p.isComplete) " — done" else "",
                 style = MaterialTheme.typography.bodySmall,
+                color = if (p.isComplete) IgrisTokens.Trust else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 4.dp),
             )
         }
+    }
     }
 }
 

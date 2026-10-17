@@ -7,7 +7,7 @@ same Rust protocol core the desktop uses ([`igris-protocol`](../igris-protocol))
 via UniFFI, so both sides speak an identical wire protocol.
 
 - Desktop app: [`igris-ecosystem`](../igris-ecosystem) (Rust/Dioxus, Windows/macOS/Linux)
-- Shared protocol crate: [`igris-protocol`](../igris-protocol) (eco REST + FastSwap/LocalSend v2)
+- Shared protocol crate: [`igris-protocol`](../igris-protocol) (eco REST + FastSwap native v1)
 - Ports: eco HTTP **53327** / TLS **53328**, FastSwap HTTP **53317** / TLS **53318**
 
 ## Stack
@@ -31,7 +31,7 @@ any one of which is enough:
 |---|---|---|
 | Copy/Cut-labelled button tap (a11y event) | high — never throttled | Covers app menus **and** the system selection menu; localized word map (~45 languages/scripts) |
 | "Copied" toast (a11y event) | high | Best timing — fires after the copy commits (Instagram, OTP auto-copy). Matches both `android.widget.Toast` and `Toast$TN` classes |
-| Copy-menu popup + subtree change | high | Sefirah/XClipper heuristic |
+| Copy-menu popup + subtree change | high | Popup-subtree heuristic |
 | Long-press → nearby tap | low — throttled 1s | Fallback for icon-only, unlabelled copy buttons (WhatsApp toolbar) |
 | Selection collapse (two selection events) | low | Works on skins that deliver selection events (stock, One UI, OxygenOS, ColorOS, Nothing OS…) |
 | Quick Settings tile "Sync clipboard" | manual | User-initiated launch — the one trigger no OEM can withhold |
@@ -58,8 +58,8 @@ offline peer can't cause a 1 Hz push loop).
   persisted on both sides. The desktop persists its device id
   (`pkg/device_id`) so links survive desktop restarts.
 
-### File transfer (FastSwap)
-LocalSend v2-compatible: `register → prepare-upload → confirm-upload
+### File transfer (FastSwap native v1)
+Igris native: `register → prepare-upload → confirm-upload
 (60 s approval) → upload`, 64 KB chunks, self-signed TLS, 10 GiB limit,
 path sanitization, MediaStore/Downloads save on receive.
 
@@ -132,9 +132,5 @@ word map tuned.
 
 ## Attribution
 
-- Copy-gesture heuristics adapted from
-  [Sefirah-Android](https://github.com/shrimqy/Sefirah-Android), which adapts
-  **XClipper** by Kaustubh Patange — **Apache License 2.0**.
-- Transparent grab-activity technique mirrors KDE Connect's
-  `ClipboardFloatingActivity` (concept only, clean-room).
-- FastSwap speaks the LocalSend v2 protocol (protocol compatibility only).
+- Igris native enterprise protocol (no external wire-protocol dependencies).
+- Clipboard grab-activity technique (clean-room Igris implementation).

@@ -40,6 +40,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.igris.companion.permissions.PermissionStatus
 import com.igris.companion.power.OemPower
+import com.igris.companion.ui.FadeSlideInCard
+import com.igris.companion.ui.SectionHeader
+import com.igris.companion.ui.theme.IgrisTokens
 import kotlinx.coroutines.delay
 
 /** One-time flag so the onboarding wall only shows on first run. */
@@ -78,6 +81,7 @@ fun OnboardingScreen(
     var overlay by remember { mutableStateOf(PermissionStatus.overlayGranted(context)) }
     var battery by remember { mutableStateOf(PermissionStatus.batteryUnrestricted(context)) }
     var notifs by remember { mutableStateOf(PermissionStatus.notificationsGranted(context)) }
+    var listener by remember { mutableStateOf(PermissionStatus.notificationListenerEnabled(context)) }
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -85,6 +89,7 @@ fun OnboardingScreen(
             overlay = PermissionStatus.overlayGranted(context)
             battery = PermissionStatus.batteryUnrestricted(context)
             notifs = PermissionStatus.notificationsGranted(context)
+            listener = PermissionStatus.notificationListenerEnabled(context)
             delay(1200)
         }
     }
@@ -92,12 +97,13 @@ fun OnboardingScreen(
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp)
     ) {
-        Text("Welcome to IGRIS", style = MaterialTheme.typography.headlineSmall)
+        SectionHeader("WELCOME TO IGRIS")
         Text(
-            "Grant these so clipboard sync keeps working in the background — even " +
-                "with the screen off. It only takes a few taps, and you can change " +
-                "them later in Settings.",
+            "A few grants keep sync alive in the background — even with the " +
+                "screen off. Each card says exactly what Android will warn " +
+                "you about and what IGRIS does with it. Nothing leaves your LAN.",
             style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 8.dp),
         )
 
@@ -109,6 +115,10 @@ fun OnboardingScreen(
             required = true,
             description = "Lets IGRIS read what you copy in any app and sync it to your " +
                 "linked devices. Without this, clipboard sync can't work.",
+            disclosure = "Android will warn that IGRIS can observe screen content. " +
+                "That is how copy detection works — IGRIS watches for copy " +
+                "gestures only, never records your screen, and never uploads " +
+                "anything anywhere: sync stays on your Wi-Fi.",
             granted = a11y,
             actionLabel = "Enable accessibility",
             note = "Find IGRIS in the list, turn it on, then tap Back.",
@@ -143,6 +153,28 @@ fun OnboardingScreen(
 
         PermissionCard(
             index = 3,
+            title = "Share notifications",
+            required = true,
+            description = "Mirrors this phone's notifications to your linked devices " +
+                "so you can read and reply from anywhere. Without this, " +
+                "notification sync can't work.",
+            disclosure = "Android will warn that IGRIS can read all notifications, " +
+                "including personal ones like messages and one-time codes. " +
+                "Mirroring goes only to devices you linked, over your Wi-Fi — " +
+                "never to any server. Sensitive codes stay on your LAN.",
+            granted = listener,
+            actionLabel = "Enable notification access",
+            note = "Find IGRIS in the list, turn it on, then tap Back.",
+            onAction = {
+                context.startActivity(
+                    Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                )
+            },
+        )
+
+        PermissionCard(
+            index = 4,
             title = "Unrestricted battery",
             required = false,
             description = "Stops your phone from freezing IGRIS after the screen turns " +
@@ -154,7 +186,7 @@ fun OnboardingScreen(
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             PermissionCard(
-                index = 4,
+                index = 5,
                 title = "Notifications",
                 required = false,
                 description = "Shows the ongoing \"sync is running\" status so the OS keeps " +
@@ -167,7 +199,7 @@ fun OnboardingScreen(
 
         if (OemPower.hasOemAutostart()) {
             PermissionCard(
-                index = 5,
+                index = 6,
                 title = "Autostart (${OemPower.oemLabel()})",
                 required = false,
                 description = "Lets IGRIS relaunch after a reboot and start in the " +
@@ -181,11 +213,12 @@ fun OnboardingScreen(
 
         Spacer(Modifier.height(8.dp))
 
-        if (!a11y || !overlay) {
+        if (!a11y || !overlay || !listener) {
             Text(
-                "Clipboard sync won't fully work until both permissions above are " +
-                    "granted — accessibility for sending, \"display over other apps\" for " +
-                    "receiving. You can still continue and turn them on later.",
+                "Sync stays partial until the required grants are on — accessibility " +
+                    "for sending clips, \"display over other apps\" for receiving " +
+                    "them, notification access for mirroring. You can still " +
+                    "continue and grant them later.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.padding(bottom = 8.dp),
@@ -196,7 +229,7 @@ fun OnboardingScreen(
             onClick = onDone,
             modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
         ) {
-            Text(if (a11y && overlay) "Start using IGRIS" else "Skip for now")
+            Text(if (a11y && overlay && listener) "Start using IGRIS" else "Skip for now")
         }
     }
 }
@@ -211,8 +244,15 @@ private fun PermissionCard(
     actionLabel: String,
     onAction: () -> Unit,
     note: String? = null,
+    disclosure: String? = null,
 ) {
-    Card(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+    FadeSlideInCard {
+    Card(
+        Modifier.fillMaxWidth().padding(vertical = 6.dp),
+        colors = androidx.compose.material3.CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+        ),
+    ) {
         Column(Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 StatusBadge(index = index, granted = granted)
@@ -225,7 +265,7 @@ private fun PermissionCard(
                             Text(
                                 "required",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary,
+                                color = IgrisTokens.Pending,
                                 fontWeight = FontWeight.SemiBold,
                             )
                         }
@@ -235,13 +275,22 @@ private fun PermissionCard(
             Text(
                 description,
                 style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 8.dp),
             )
+            if (disclosure != null) {
+                Text(
+                    "Heads-up: $disclosure",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
+                    modifier = Modifier.padding(top = 6.dp),
+                )
+            }
             if (granted == true) {
                 Text(
                     "Granted ✓",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = IgrisTokens.Trust,
                     modifier = Modifier.padding(top = 12.dp),
                 )
             } else {
@@ -253,11 +302,13 @@ private fun PermissionCard(
                     Text(
                         note,
                         style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 6.dp),
                     )
                 }
             }
         }
+    }
     }
 }
 
@@ -267,7 +318,7 @@ private fun StatusBadge(index: Int, granted: Boolean?) {
         Icon(
             Icons.Filled.CheckCircle,
             contentDescription = "granted",
-            tint = MaterialTheme.colorScheme.primary,
+            tint = IgrisTokens.Trust,
             modifier = Modifier.size(28.dp),
         )
     } else {

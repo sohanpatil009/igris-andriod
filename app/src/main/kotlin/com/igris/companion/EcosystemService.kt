@@ -45,12 +45,19 @@ class EcosystemService : Service() {
         super.onCreate()
         createChannel()
         keepAlive = KeepAliveManager(this)
+        com.igris.companion.calls.CallSmsBridge.start(this)
         scope.launch { keepAliveLoop() }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         enterForeground()
         NodeHolder.start(this)
+        // Mirror the phone's call history to linked desktops once the node
+        // finished booting (NodeHolder.start is async on the IO dispatcher).
+        scope.launch {
+            delay(12_000)
+            com.igris.companion.calls.CallSmsBridge.syncCallLog(applicationContext)
+        }
         return START_STICKY
     }
 

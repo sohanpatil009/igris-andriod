@@ -22,14 +22,14 @@ import java.security.MessageDigest
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Exports local notifications onto the ecosystem (KDE/Sefirah-style):
+ * Exports local notifications onto the ecosystem (Igris native):
  *
  * - Noise filter: ongoing/foreground/local-only/group-summary/media/system
  *   notifications are skipped.
  * - ~150ms coalescing per `StatusBarNotification.key`: rapid re-posts
- *   collapse into one update instead of spamming peers (KDE uses 50ms).
+ *   collapse into one update instead of spamming peers (50ms coalesce).
  * - Transient suppression: a removal arriving before the coalesce delay
- *   cancels the pending send entirely (KDE behaviour).
+ *   cancels the pending send entirely (Igris behaviour).
  * - Rich extraction: title/text/conversation, app label + package, app and
  *   large icon downscaled to <=96px PNG base64 with MD5 hash, action labels,
  *   reply `RemoteInput.resultKey`.
@@ -87,16 +87,57 @@ class IgrisNotificationListener : NotificationListenerService() {
 
         /** Peer requested a quick reply — fire the stored RemoteInput PendingIntent. */
         fun reply(key: String, text: String) {
-            val (intent, remoteInputs) = replyActions[key] ?: return
+            val stored = replyActions[key]
+            if (stored != null) {
+                fireRemoteInput(stored.first, stored.second, text, key)
+                return
+            }
+            // The map is in-memory: a restart wipes it while the shade
+            // notification survives. Fall back to the live shade entry.
+            Log.d(TAG, "reply: no stored action for key=$key, re-reading shade")
+            val svc = instance ?: run {
+                Log.w(TAG, "reply: listener not bound")
+                return
+            }
+            try {
+                val match = svc.activeNotifications.firstOrNull { it.key == key }
+                if (match == null) {
+                    Log.w(TAG, "reply: key gone from shade: $key")
+                    return
+                }
+                val actions = match.notification.actions ?: emptyArray()
+                for (action in actions) {
+                    val ris = action?.remoteInputs
+                    if (ris != null && ris.isNotEmpty() && action.actionIntent != null) {
+                        replyActions[key] = action.actionIntent to ris
+                        fireRemoteInput(action.actionIntent, ris, text, key)
+                        return
+                    }
+                }
+                Log.w(TAG, "reply: live entry has no RemoteInput: $key")
+            } catch (t: Throwable) {
+                Log.w(TAG, "reply: shade re-read failed", t)
+            }
+        }
+
+        private fun fireRemoteInput(
+            intent: PendingIntent,
+            remoteInputs: Array<android.app.RemoteInput>,
+            text: String,
+            key: String,
+        ) {
             val localIntent = android.content.Intent()
             val results = android.os.Bundle()
             for (ri in remoteInputs) {
-                android.app.RemoteInput.addResultsToIntent(arrayOf(ri), localIntent, results)
+                // Results must go in BEFORE sealing the intent — otherwise
+                // the target app receives an empty message ("can't send").
                 results.putString(ri.resultKey, text)
+                android.app.RemoteInput.addResultsToIntent(arrayOf(ri), localIntent, results)
                 break
             }
             try {
                 intent.send(instance?.applicationContext, 0, localIntent)
+                Log.d(TAG, "reply fired for key=$key")
             } catch (t: Throwable) {
                 Log.w(TAG, "reply intent failed", t)
             }
@@ -216,7 +257,7 @@ class IgrisNotificationListener : NotificationListenerService() {
         if (flags and Notification.FLAG_GROUP_SUMMARY != 0) return false
         if (n.isMediaStyle()) return false
 
-        // System noise hacks (KDE/Sefirah parity).
+        // System noise hacks (Igris native parity).
         val pkg = sbn.packageName
         if (pkg == "com.android.systemui") {
             val tag = sbn.tag ?: ""

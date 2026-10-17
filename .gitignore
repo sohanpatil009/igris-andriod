@@ -10,3 +10,7 @@
 local.properties
 /app/build
 /app/release
+
+# Knowledge-graph tooling output
+graphify-out/
+

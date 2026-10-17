@@ -656,6 +656,9 @@ internal interface UniffiCallbackInterfaceClipboardProviderMethod0 : com.sun.jna
 internal interface UniffiCallbackInterfaceClipboardProviderMethod1 : com.sun.jna.Callback {
     fun callback(`uniffiHandle`: Long,`text`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
+internal interface UniffiCallbackInterfaceContactProviderMethod0 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`query`: RustBuffer.ByValue,`limit`: Int,`uniffiOutReturn`: RustBuffer,uniffiCallStatus: UniffiRustCallStatus,)
+}
 internal interface UniffiCallbackInterfaceNodeEventListenerMethod0 : com.sun.jna.Callback {
     fun callback(`uniffiHandle`: Long,`device`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
@@ -681,12 +684,30 @@ internal interface UniffiCallbackInterfaceNodeEventListenerMethod7 : com.sun.jna
     fun callback(`uniffiHandle`: Long,`key`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
 internal interface UniffiCallbackInterfaceNodeEventListenerMethod8 : com.sun.jna.Callback {
-    fun callback(`uniffiHandle`: Long,`transfer`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+    fun callback(`uniffiHandle`: Long,`call`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
 internal interface UniffiCallbackInterfaceNodeEventListenerMethod9 : com.sun.jna.Callback {
-    fun callback(`uniffiHandle`: Long,`progress`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+    fun callback(`uniffiHandle`: Long,`sms`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
 internal interface UniffiCallbackInterfaceNodeEventListenerMethod10 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`callId`: RustBuffer.ByValue,`action`: RustBuffer.ByValue,`phoneNumber`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+internal interface UniffiCallbackInterfaceNodeEventListenerMethod11 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`address`: RustBuffer.ByValue,`body`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+internal interface UniffiCallbackInterfaceNodeEventListenerMethod12 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`transfer`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+internal interface UniffiCallbackInterfaceNodeEventListenerMethod13 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`progress`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+internal interface UniffiCallbackInterfaceNodeEventListenerMethod14 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`frame`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+internal interface UniffiCallbackInterfaceNodeEventListenerMethod15 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`state`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+internal interface UniffiCallbackInterfaceNodeEventListenerMethod16 : com.sun.jna.Callback {
     fun callback(`uniffiHandle`: Long,`message`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
 }
 internal interface UniffiCallbackInterfaceNotificationProviderMethod0 : com.sun.jna.Callback {
@@ -723,7 +744,26 @@ internal open class UniffiVTableCallbackInterfaceClipboardProvider(
     }
 
 }
-@Structure.FieldOrder("uniffiFree", "uniffiClone", "onDeviceUpdated", "onDeviceRemoved", "onClipboardReceived", "onClipboardReceivedFrom", "onNotificationReceived", "onNotificationReplyRequested", "onNotificationActionRequested", "onNotificationDismissRequested", "onTransferRequest", "onTransferProgress", "onLog")
+@Structure.FieldOrder("uniffiFree", "uniffiClone", "searchContacts")
+internal open class UniffiVTableCallbackInterfaceContactProvider(
+    @JvmField internal var `uniffiFree`: UniffiCallbackInterfaceFree? = null,
+    @JvmField internal var `uniffiClone`: UniffiCallbackInterfaceClone? = null,
+    @JvmField internal var `searchContacts`: UniffiCallbackInterfaceContactProviderMethod0? = null,
+) : Structure() {
+    class UniffiByValue(
+        `uniffiFree`: UniffiCallbackInterfaceFree? = null,
+        `uniffiClone`: UniffiCallbackInterfaceClone? = null,
+        `searchContacts`: UniffiCallbackInterfaceContactProviderMethod0? = null,
+    ): UniffiVTableCallbackInterfaceContactProvider(`uniffiFree`,`uniffiClone`,`searchContacts`,), Structure.ByValue
+
+   internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceContactProvider) {
+        `uniffiFree` = other.`uniffiFree`
+        `uniffiClone` = other.`uniffiClone`
+        `searchContacts` = other.`searchContacts`
+    }
+
+}
+@Structure.FieldOrder("uniffiFree", "uniffiClone", "onDeviceUpdated", "onDeviceRemoved", "onClipboardReceived", "onClipboardReceivedFrom", "onNotificationReceived", "onNotificationReplyRequested", "onNotificationActionRequested", "onNotificationDismissRequested", "onCallReceived", "onSmsReceived", "onCallAction", "onSmsSendRequested", "onTransferRequest", "onTransferProgress", "onAudioFrame", "onAudioStreamState", "onLog")
 internal open class UniffiVTableCallbackInterfaceNodeEventListener(
     @JvmField internal var `uniffiFree`: UniffiCallbackInterfaceFree? = null,
     @JvmField internal var `uniffiClone`: UniffiCallbackInterfaceClone? = null,
@@ -735,9 +775,15 @@ internal open class UniffiVTableCallbackInterfaceNodeEventListener(
     @JvmField internal var `onNotificationReplyRequested`: UniffiCallbackInterfaceNodeEventListenerMethod5? = null,
     @JvmField internal var `onNotificationActionRequested`: UniffiCallbackInterfaceNodeEventListenerMethod6? = null,
     @JvmField internal var `onNotificationDismissRequested`: UniffiCallbackInterfaceNodeEventListenerMethod7? = null,
-    @JvmField internal var `onTransferRequest`: UniffiCallbackInterfaceNodeEventListenerMethod8? = null,
-    @JvmField internal var `onTransferProgress`: UniffiCallbackInterfaceNodeEventListenerMethod9? = null,
-    @JvmField internal var `onLog`: UniffiCallbackInterfaceNodeEventListenerMethod10? = null,
+    @JvmField internal var `onCallReceived`: UniffiCallbackInterfaceNodeEventListenerMethod8? = null,
+    @JvmField internal var `onSmsReceived`: UniffiCallbackInterfaceNodeEventListenerMethod9? = null,
+    @JvmField internal var `onCallAction`: UniffiCallbackInterfaceNodeEventListenerMethod10? = null,
+    @JvmField internal var `onSmsSendRequested`: UniffiCallbackInterfaceNodeEventListenerMethod11? = null,
+    @JvmField internal var `onTransferRequest`: UniffiCallbackInterfaceNodeEventListenerMethod12? = null,
+    @JvmField internal var `onTransferProgress`: UniffiCallbackInterfaceNodeEventListenerMethod13? = null,
+    @JvmField internal var `onAudioFrame`: UniffiCallbackInterfaceNodeEventListenerMethod14? = null,
+    @JvmField internal var `onAudioStreamState`: UniffiCallbackInterfaceNodeEventListenerMethod15? = null,
+    @JvmField internal var `onLog`: UniffiCallbackInterfaceNodeEventListenerMethod16? = null,
 ) : Structure() {
     class UniffiByValue(
         `uniffiFree`: UniffiCallbackInterfaceFree? = null,
@@ -750,10 +796,16 @@ internal open class UniffiVTableCallbackInterfaceNodeEventListener(
         `onNotificationReplyRequested`: UniffiCallbackInterfaceNodeEventListenerMethod5? = null,
         `onNotificationActionRequested`: UniffiCallbackInterfaceNodeEventListenerMethod6? = null,
         `onNotificationDismissRequested`: UniffiCallbackInterfaceNodeEventListenerMethod7? = null,
-        `onTransferRequest`: UniffiCallbackInterfaceNodeEventListenerMethod8? = null,
-        `onTransferProgress`: UniffiCallbackInterfaceNodeEventListenerMethod9? = null,
-        `onLog`: UniffiCallbackInterfaceNodeEventListenerMethod10? = null,
-    ): UniffiVTableCallbackInterfaceNodeEventListener(`uniffiFree`,`uniffiClone`,`onDeviceUpdated`,`onDeviceRemoved`,`onClipboardReceived`,`onClipboardReceivedFrom`,`onNotificationReceived`,`onNotificationReplyRequested`,`onNotificationActionRequested`,`onNotificationDismissRequested`,`onTransferRequest`,`onTransferProgress`,`onLog`,), Structure.ByValue
+        `onCallReceived`: UniffiCallbackInterfaceNodeEventListenerMethod8? = null,
+        `onSmsReceived`: UniffiCallbackInterfaceNodeEventListenerMethod9? = null,
+        `onCallAction`: UniffiCallbackInterfaceNodeEventListenerMethod10? = null,
+        `onSmsSendRequested`: UniffiCallbackInterfaceNodeEventListenerMethod11? = null,
+        `onTransferRequest`: UniffiCallbackInterfaceNodeEventListenerMethod12? = null,
+        `onTransferProgress`: UniffiCallbackInterfaceNodeEventListenerMethod13? = null,
+        `onAudioFrame`: UniffiCallbackInterfaceNodeEventListenerMethod14? = null,
+        `onAudioStreamState`: UniffiCallbackInterfaceNodeEventListenerMethod15? = null,
+        `onLog`: UniffiCallbackInterfaceNodeEventListenerMethod16? = null,
+    ): UniffiVTableCallbackInterfaceNodeEventListener(`uniffiFree`,`uniffiClone`,`onDeviceUpdated`,`onDeviceRemoved`,`onClipboardReceived`,`onClipboardReceivedFrom`,`onNotificationReceived`,`onNotificationReplyRequested`,`onNotificationActionRequested`,`onNotificationDismissRequested`,`onCallReceived`,`onSmsReceived`,`onCallAction`,`onSmsSendRequested`,`onTransferRequest`,`onTransferProgress`,`onAudioFrame`,`onAudioStreamState`,`onLog`,), Structure.ByValue
 
    internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceNodeEventListener) {
         `uniffiFree` = other.`uniffiFree`
@@ -766,8 +818,14 @@ internal open class UniffiVTableCallbackInterfaceNodeEventListener(
         `onNotificationReplyRequested` = other.`onNotificationReplyRequested`
         `onNotificationActionRequested` = other.`onNotificationActionRequested`
         `onNotificationDismissRequested` = other.`onNotificationDismissRequested`
+        `onCallReceived` = other.`onCallReceived`
+        `onSmsReceived` = other.`onSmsReceived`
+        `onCallAction` = other.`onCallAction`
+        `onSmsSendRequested` = other.`onSmsSendRequested`
         `onTransferRequest` = other.`onTransferRequest`
         `onTransferProgress` = other.`onTransferProgress`
+        `onAudioFrame` = other.`onAudioFrame`
+        `onAudioStreamState` = other.`onAudioStreamState`
         `onLog` = other.`onLog`
     }
 
@@ -827,7 +885,11 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_igris_protocol_checksum_method_clipboardprovider_set_text(
     ): Int
+    external fun uniffi_igris_protocol_checksum_method_contactprovider_search_contacts(
+    ): Int
     external fun uniffi_igris_protocol_checksum_method_ecosystemnode_approve_transfer(
+    ): Int
+    external fun uniffi_igris_protocol_checksum_method_ecosystemnode_call_action(
     ): Int
     external fun uniffi_igris_protocol_checksum_method_ecosystemnode_clipboard_delivered(
     ): Int
@@ -835,11 +897,15 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_igris_protocol_checksum_method_ecosystemnode_dismiss_notification(
     ): Int
+    external fun uniffi_igris_protocol_checksum_method_ecosystemnode_get_calls(
+    ): Int
     external fun uniffi_igris_protocol_checksum_method_ecosystemnode_get_devices(
     ): Int
     external fun uniffi_igris_protocol_checksum_method_ecosystemnode_get_notifications(
     ): Int
     external fun uniffi_igris_protocol_checksum_method_ecosystemnode_get_received_files(
+    ): Int
+    external fun uniffi_igris_protocol_checksum_method_ecosystemnode_get_sms(
     ): Int
     external fun uniffi_igris_protocol_checksum_method_ecosystemnode_get_transfer_progress(
     ): Int
@@ -849,17 +915,29 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_igris_protocol_checksum_method_ecosystemnode_pending_transfers(
     ): Int
+    external fun uniffi_igris_protocol_checksum_method_ecosystemnode_push_call(
+    ): Int
+    external fun uniffi_igris_protocol_checksum_method_ecosystemnode_push_call_log(
+    ): Int
     external fun uniffi_igris_protocol_checksum_method_ecosystemnode_push_clipboard(
     ): Int
     external fun uniffi_igris_protocol_checksum_method_ecosystemnode_push_notification(
     ): Int
     external fun uniffi_igris_protocol_checksum_method_ecosystemnode_push_notification_rich(
     ): Int
+    external fun uniffi_igris_protocol_checksum_method_ecosystemnode_push_sms(
+    ): Int
+    external fun uniffi_igris_protocol_checksum_method_ecosystemnode_reply_notification(
+    ): Int
+    external fun uniffi_igris_protocol_checksum_method_ecosystemnode_send_audio_frame(
+    ): Int
     external fun uniffi_igris_protocol_checksum_method_ecosystemnode_send_files(
     ): Int
     external fun uniffi_igris_protocol_checksum_method_ecosystemnode_shutdown(
     ): Int
     external fun uniffi_igris_protocol_checksum_method_ecosystemnode_start(
+    ): Int
+    external fun uniffi_igris_protocol_checksum_method_ecosystemnode_sync_peer_lists(
     ): Int
     external fun uniffi_igris_protocol_checksum_method_ecosystemnode_trusted_count(
     ): Int
@@ -881,9 +959,21 @@ internal object IntegrityCheckingUniffiLib {
     ): Int
     external fun uniffi_igris_protocol_checksum_method_nodeeventlistener_on_notification_dismiss_requested(
     ): Int
+    external fun uniffi_igris_protocol_checksum_method_nodeeventlistener_on_call_received(
+    ): Int
+    external fun uniffi_igris_protocol_checksum_method_nodeeventlistener_on_sms_received(
+    ): Int
+    external fun uniffi_igris_protocol_checksum_method_nodeeventlistener_on_call_action(
+    ): Int
+    external fun uniffi_igris_protocol_checksum_method_nodeeventlistener_on_sms_send_requested(
+    ): Int
     external fun uniffi_igris_protocol_checksum_method_nodeeventlistener_on_transfer_request(
     ): Int
     external fun uniffi_igris_protocol_checksum_method_nodeeventlistener_on_transfer_progress(
+    ): Int
+    external fun uniffi_igris_protocol_checksum_method_nodeeventlistener_on_audio_frame(
+    ): Int
+    external fun uniffi_igris_protocol_checksum_method_nodeeventlistener_on_audio_stream_state(
     ): Int
     external fun uniffi_igris_protocol_checksum_method_nodeeventlistener_on_log(
     ): Int
@@ -914,6 +1004,7 @@ internal object UniffiLib {
     init {
         Native.register(UniffiLib::class.java, findLibraryName(componentName = "igris_protocol"))
         uniffiCallbackInterfaceClipboardProvider.register(this)
+        uniffiCallbackInterfaceContactProvider.register(this)
         uniffiCallbackInterfaceNodeEventListener.register(this)
         uniffiCallbackInterfaceNotificationProvider.register(this)
         
@@ -928,13 +1019,23 @@ internal object UniffiLib {
     ): RustBuffer.ByValue
     external fun uniffi_igris_protocol_fn_method_clipboardprovider_set_text(`ptr`: Long,`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
+    external fun uniffi_igris_protocol_fn_clone_contactprovider(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Long
+    external fun uniffi_igris_protocol_fn_free_contactprovider(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_igris_protocol_fn_init_callback_vtable_contactprovider(`vtable`: UniffiVTableCallbackInterfaceContactProvider,
+    ): Unit
+    external fun uniffi_igris_protocol_fn_method_contactprovider_search_contacts(`ptr`: Long,`query`: RustBuffer.ByValue,`limit`: Int,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     external fun uniffi_igris_protocol_fn_clone_ecosystemnode(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Long
     external fun uniffi_igris_protocol_fn_free_ecosystemnode(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
-    external fun uniffi_igris_protocol_fn_constructor_ecosystemnode_new(`config`: RustBuffer.ByValue,`clipboardProvider`: Long,`notificationProvider`: Long,`listener`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    external fun uniffi_igris_protocol_fn_constructor_ecosystemnode_new(`config`: RustBuffer.ByValue,`clipboardProvider`: Long,`notificationProvider`: Long,`contactProvider`: Long,`listener`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Long
     external fun uniffi_igris_protocol_fn_method_ecosystemnode_approve_transfer(`ptr`: Long,`sessionId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_igris_protocol_fn_method_ecosystemnode_call_action(`ptr`: Long,`callId`: RustBuffer.ByValue,`action`: RustBuffer.ByValue,`phoneNumber`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
     external fun uniffi_igris_protocol_fn_method_ecosystemnode_clipboard_delivered(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
@@ -942,11 +1043,15 @@ internal object UniffiLib {
     ): Unit
     external fun uniffi_igris_protocol_fn_method_ecosystemnode_dismiss_notification(`ptr`: Long,`key`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
+    external fun uniffi_igris_protocol_fn_method_ecosystemnode_get_calls(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     external fun uniffi_igris_protocol_fn_method_ecosystemnode_get_devices(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     external fun uniffi_igris_protocol_fn_method_ecosystemnode_get_notifications(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     external fun uniffi_igris_protocol_fn_method_ecosystemnode_get_received_files(`ptr`: Long,`sessionId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    external fun uniffi_igris_protocol_fn_method_ecosystemnode_get_sms(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     external fun uniffi_igris_protocol_fn_method_ecosystemnode_get_transfer_progress(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
@@ -956,11 +1061,21 @@ internal object UniffiLib {
     ): Unit
     external fun uniffi_igris_protocol_fn_method_ecosystemnode_pending_transfers(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
+    external fun uniffi_igris_protocol_fn_method_ecosystemnode_push_call(`ptr`: Long,`callId`: RustBuffer.ByValue,`event`: RustBuffer.ByValue,`phoneNumber`: RustBuffer.ByValue,`contactName`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_igris_protocol_fn_method_ecosystemnode_push_call_log(`ptr`: Long,`entries`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
     external fun uniffi_igris_protocol_fn_method_ecosystemnode_push_clipboard(`ptr`: Long,`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
     external fun uniffi_igris_protocol_fn_method_ecosystemnode_push_notification(`ptr`: Long,`appName`: RustBuffer.ByValue,`title`: RustBuffer.ByValue,`body`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
     external fun uniffi_igris_protocol_fn_method_ecosystemnode_push_notification_rich(`ptr`: Long,`rich`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_igris_protocol_fn_method_ecosystemnode_push_sms(`ptr`: Long,`smsId`: RustBuffer.ByValue,`threadId`: RustBuffer.ByValue,`address`: RustBuffer.ByValue,`body`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_igris_protocol_fn_method_ecosystemnode_reply_notification(`ptr`: Long,`deviceId`: RustBuffer.ByValue,`key`: RustBuffer.ByValue,`text`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_igris_protocol_fn_method_ecosystemnode_send_audio_frame(`ptr`: Long,`frames`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
     external fun uniffi_igris_protocol_fn_method_ecosystemnode_send_files(`ptr`: Long,`host`: RustBuffer.ByValue,`files`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
@@ -968,6 +1083,8 @@ internal object UniffiLib {
     ): Unit
     external fun uniffi_igris_protocol_fn_method_ecosystemnode_start(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
+    external fun uniffi_igris_protocol_fn_method_ecosystemnode_sync_peer_lists(`ptr`: Long,`host`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     external fun uniffi_igris_protocol_fn_method_ecosystemnode_trusted_count(`ptr`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Int
     external fun uniffi_igris_protocol_fn_method_ecosystemnode_unpair(`ptr`: Long,`deviceId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
@@ -994,9 +1111,21 @@ internal object UniffiLib {
     ): Unit
     external fun uniffi_igris_protocol_fn_method_nodeeventlistener_on_notification_dismiss_requested(`ptr`: Long,`key`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
+    external fun uniffi_igris_protocol_fn_method_nodeeventlistener_on_call_received(`ptr`: Long,`call`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_igris_protocol_fn_method_nodeeventlistener_on_sms_received(`ptr`: Long,`sms`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_igris_protocol_fn_method_nodeeventlistener_on_call_action(`ptr`: Long,`callId`: RustBuffer.ByValue,`action`: RustBuffer.ByValue,`phoneNumber`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_igris_protocol_fn_method_nodeeventlistener_on_sms_send_requested(`ptr`: Long,`address`: RustBuffer.ByValue,`body`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
     external fun uniffi_igris_protocol_fn_method_nodeeventlistener_on_transfer_request(`ptr`: Long,`transfer`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
     external fun uniffi_igris_protocol_fn_method_nodeeventlistener_on_transfer_progress(`ptr`: Long,`progress`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_igris_protocol_fn_method_nodeeventlistener_on_audio_frame(`ptr`: Long,`frame`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    external fun uniffi_igris_protocol_fn_method_nodeeventlistener_on_audio_stream_state(`ptr`: Long,`state`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
     external fun uniffi_igris_protocol_fn_method_nodeeventlistener_on_log(`ptr`: Long,`message`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
@@ -1139,7 +1268,13 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_igris_protocol_checksum_method_clipboardprovider_set_text() != 51950) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_igris_protocol_checksum_method_contactprovider_search_contacts() != 28397) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_approve_transfer() != 23109) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_call_action() != 39286) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_clipboard_delivered() != 52406) {
@@ -1151,6 +1286,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_dismiss_notification() != 49773) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_get_calls() != 10882) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_get_devices() != 7944) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -1158,6 +1296,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_get_received_files() != 56766) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_get_sms() != 42590) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_get_transfer_progress() != 7130) {
@@ -1172,22 +1313,40 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_pending_transfers() != 7512) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_push_call() != 61615) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_push_call_log() != 51009) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_push_clipboard() != 41591) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_push_notification() != 61355) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_push_notification_rich() != 23422) {
+    if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_push_notification_rich() != 47783) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_send_files() != 3169) {
+    if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_push_sms() != 35155) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_reply_notification() != 27250) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_send_audio_frame() != 3300) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_send_files() != 51019) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_shutdown() != 19251) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_start() != 16267) {
+    if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_start() != 13879) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_sync_peer_lists() != 24358) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_igris_protocol_checksum_method_ecosystemnode_trusted_count() != 46904) {
@@ -1220,13 +1379,31 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_igris_protocol_checksum_method_nodeeventlistener_on_notification_dismiss_requested() != 56196) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_igris_protocol_checksum_method_nodeeventlistener_on_transfer_request() != 23431) {
+    if (lib.uniffi_igris_protocol_checksum_method_nodeeventlistener_on_call_received() != 15231) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_igris_protocol_checksum_method_nodeeventlistener_on_transfer_progress() != 1329) {
+    if (lib.uniffi_igris_protocol_checksum_method_nodeeventlistener_on_sms_received() != 60837) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_igris_protocol_checksum_method_nodeeventlistener_on_log() != 63144) {
+    if (lib.uniffi_igris_protocol_checksum_method_nodeeventlistener_on_call_action() != 6571) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_igris_protocol_checksum_method_nodeeventlistener_on_sms_send_requested() != 51653) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_igris_protocol_checksum_method_nodeeventlistener_on_transfer_request() != 20208) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_igris_protocol_checksum_method_nodeeventlistener_on_transfer_progress() != 64511) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_igris_protocol_checksum_method_nodeeventlistener_on_audio_frame() != 43346) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_igris_protocol_checksum_method_nodeeventlistener_on_audio_stream_state() != 28931) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_igris_protocol_checksum_method_nodeeventlistener_on_log() != 52900) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_igris_protocol_checksum_method_notificationprovider_read_notifications() != 12758) {
@@ -1241,7 +1418,7 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_igris_protocol_checksum_method_notificationprovider_request_permission() != 7566) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_igris_protocol_checksum_constructor_ecosystemnode_new() != 50340) {
+    if (lib.uniffi_igris_protocol_checksum_constructor_ecosystemnode_new() != 49297) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
 }
@@ -1628,6 +1805,25 @@ public object FfiConverterString: FfiConverter<String, RustBuffer.ByValue> {
         val byteBuf = toUtf8(value)
         buf.putInt(byteBuf.limit())
         buf.put(byteBuf)
+    }
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterByteArray: FfiConverterRustBuffer<ByteArray> {
+    override fun read(buf: ByteBuffer): ByteArray {
+        val len = buf.getInt()
+        val byteArr = ByteArray(len)
+        buf.get(byteArr)
+        return byteArr
+    }
+    override fun allocationSize(value: ByteArray): ULong {
+        return 4UL + value.size.toULong()
+    }
+    override fun write(value: ByteArray, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        buf.put(value)
     }
 }
 
@@ -2086,12 +2282,340 @@ public object FfiConverterTypeClipboardProvider: FfiConverter<ClipboardProvider,
 
 
 /**
+ * Platform contacts, injected by the host. Backed by the phonebook
+ * ContentProvider on Android; queried per keystroke (debounced by UI).
+ */
+public interface ContactProvider {
+    
+    fun `searchContacts`(`query`: kotlin.String, `limit`: kotlin.UInt): List<ContactHitInfo>
+    
+    companion object
+}
+
+/**
+ * Platform contacts, injected by the host. Backed by the phonebook
+ * ContentProvider on Android; queried per keystroke (debounced by UI).
+ */
+open class ContactProviderImpl: Disposable, AutoCloseable, ContactProvider
+{
+
+    @Suppress("UNUSED_PARAMETER")
+    /**
+     * @suppress
+     */
+    constructor(withHandle: UniffiWithHandle, handle: Long) {
+        this.handle = handle
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(handle))
+    }
+
+    /**
+     * @suppress
+     *
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noHandle: NoHandle) {
+        this.handle = 0
+        this.cleanable = null
+    }
+
+    protected val handle: Long
+    protected val cleanable: UniffiCleaner.Cleanable?
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    /**
+     * Whether the current object has been destroyed and its reference is gone in the Rust side.
+     */
+    val uniffiIsDestroyed: Boolean get() = wasDestroyed.get()
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable?.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithHandle(block: (handle: Long) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the handle being freed concurrently.
+        try {
+            return block(this.uniffiCloneHandle())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable?.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val handle: Long) : Runnable {
+        override fun run() {
+            if (handle == 0.toLong()) {
+                // Fake object created with `NoHandle`, don't try to free.
+                return;
+            }
+            uniffiRustCall { status ->
+                UniffiLib.uniffi_igris_protocol_fn_free_contactprovider(handle, status)
+            }
+        }
+    }
+
+    /**
+     * @suppress
+     */
+    fun uniffiCloneHandle(): Long {
+        if (handle == 0.toLong()) {
+            throw InternalException("uniffiCloneHandle() called on NoHandle object");
+        }
+        return uniffiRustCall() { status ->
+            UniffiLib.uniffi_igris_protocol_fn_clone_contactprovider(handle, status)
+        }
+    }
+
+    override fun `searchContacts`(`query`: kotlin.String, `limit`: kotlin.UInt): List<ContactHitInfo> {
+            return FfiConverterSequenceTypeContactHitInfo.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_igris_protocol_fn_method_contactprovider_search_contacts(
+        it,
+        
+        FfiConverterString.lower(`query`),
+        FfiConverterUInt.lower(`limit`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+
+    
+
+
+    
+    
+    /**
+     * @suppress
+     */
+    companion object
+    
+}
+
+
+
+// Put the implementation in an object so we don't pollute the top-level namespace
+internal object uniffiCallbackInterfaceContactProvider {
+    internal object `searchContacts`: UniffiCallbackInterfaceContactProviderMethod0 {
+        override fun callback(`uniffiHandle`: Long,`query`: RustBuffer.ByValue,`limit`: Int,`uniffiOutReturn`: RustBuffer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeContactProvider.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`searchContacts`(
+                    FfiConverterString.lift(`query`),
+                    FfiConverterUInt.lift(`limit`),
+                )
+            }
+            val writeReturn = { value: List<ContactHitInfo> -> uniffiOutReturn.setValue(FfiConverterSequenceTypeContactHitInfo.lower(value)) }
+            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
+        }
+    }
+
+    internal object uniffiFree: UniffiCallbackInterfaceFree {
+        override fun callback(handle: Long) {
+            FfiConverterTypeContactProvider.handleMap.remove(handle)
+        }
+    }
+
+    internal object uniffiClone: UniffiCallbackInterfaceClone {
+        override fun callback(handle: Long): Long {
+            return FfiConverterTypeContactProvider.handleMap.clone(handle)
+        }
+    }
+
+    internal var vtable = UniffiVTableCallbackInterfaceContactProvider.UniffiByValue(
+        uniffiFree,
+        uniffiClone,
+        `searchContacts`,
+    )
+
+    // Registers the foreign callback with the Rust side.
+    // This method is generated for each callback interface.
+    internal fun register(lib: UniffiLib) {
+        lib.uniffi_igris_protocol_fn_init_callback_vtable_contactprovider(vtable)
+    }
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeContactProvider: FfiConverter<ContactProvider, Long> {
+    internal val handleMap = UniffiHandleMap<ContactProvider>()
+
+    override fun lower(value: ContactProvider): Long {
+        if (value is ContactProviderImpl) {
+             // Rust-implemented object.  Clone the handle and return it
+            return value.uniffiCloneHandle()
+         } else {
+            // Kotlin object, generate a new vtable handle and return that.
+            return handleMap.insert(value)
+         }
+    }
+
+    override fun lift(value: Long): ContactProvider {
+        if ((value and 1.toLong()) == 0.toLong()) {
+            // Rust-generated handle, construct a new class that uses the handle to implement the
+            // interface
+            return ContactProviderImpl(UniffiWithHandle, value)
+        } else {
+            // Kotlin-generated handle, get the object from the handle map
+            return handleMap.remove(value)
+        }
+    }
+
+    override fun read(buf: ByteBuffer): ContactProvider {
+        return lift(buf.getLong())
+    }
+
+    override fun allocationSize(value: ContactProvider) = 8UL
+
+    override fun write(value: ContactProvider, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a handle
+// to the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque handle to the underlying Rust struct.
+//     Method calls need to read this handle from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its handle should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the handle, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the handle, but is interrupted
+//      before it can pass the handle over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read handle value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+/**
  * Owns the tokio runtime + managers for one app process. Construct once,
  * keep for the life of the foreground service.
  */
 public interface EcosystemNodeInterface {
     
     fun `approveTransfer`(`sessionId`: kotlin.String)
+    
+    /**
+     * Enterprise: send a call control action to trusted peers.
+     * `dial` carries its target number (desk-initiated outgoing call).
+     */
+    fun `callAction`(`callId`: kotlin.String, `action`: kotlin.String, `phoneNumber`: kotlin.String)
     
     /**
      * True when the most recent local clipboard content was delivered to at
@@ -2110,6 +2634,8 @@ public interface EcosystemNodeInterface {
      */
     fun `dismissNotification`(`key`: kotlin.String)
     
+    fun `getCalls`(): List<CallInfo>
+    
     /**
      * Current view of discovered + paired peers (eco subnet scan).
      */
@@ -2122,6 +2648,8 @@ public interface EcosystemNodeInterface {
      * MediaStore publish once the session completes).
      */
     fun `getReceivedFiles`(`sessionId`: kotlin.String): List<kotlin.String>
+    
+    fun `getSms`(): List<SmsInfo>
     
     /**
      * Live progress of all in/out transfer sessions.
@@ -2147,6 +2675,18 @@ public interface EcosystemNodeInterface {
     fun `pendingTransfers`(): List<IncomingTransfer>
     
     /**
+     * Enterprise: push a local call event and fan-out to trusted peers.
+     */
+    fun `pushCall`(`callId`: kotlin.String, `event`: kotlin.String, `phoneNumber`: kotlin.String, `contactName`: kotlin.String)
+    
+    /**
+     * Enterprise: push a call-log snapshot (the phone's call history) to
+     * trusted peers so the desktop mirrors it. Deduped peer-side by
+     * `call_id`; call once per connect, not per row.
+     */
+    fun `pushCallLog`(`entries`: List<CallLogEntryInfo>)
+    
+    /**
      * Push a clipboard change detected outside the poll loop (accessibility
      * hook / in-app paste). Feeds the same dedup + trusted-peers fan-out as
      * a locally-detected change. A failed fan-out is NOT committed, so an
@@ -2166,13 +2706,30 @@ public interface EcosystemNodeInterface {
      * into the core: keyed dedup (updates in place), history, event, then
      * fan-out to trusted peers with the `notification_sync` capability over
      * `/notification/sync`. Icon bytes are skipped per-peer when the hash is
-     * unchanged (KDE-style); `icon_hash` is still sent so the peer can cache.
+     * unchanged (hash-skip); `icon_hash` is still sent so the peer can cache.
      */
     fun `pushNotificationRich`(`rich`: RichNotificationInfo)
     
     /**
+     * Enterprise: push a local SMS and fan-out to trusted peers.
+     */
+    fun `pushSms`(`smsId`: kotlin.String, `threadId`: kotlin.String, `address`: kotlin.String, `body`: kotlin.String)
+    
+    /**
+     * Enterprise: reply to a mirrored notification straight from the
+     * system shade (no app open). Routes to the originating device.
+     */
+    fun `replyNotification`(`deviceId`: kotlin.String, `key`: kotlin.String, `text`: kotlin.String)
+    
+    /**
+     * LAN audio: host capture loop pushes one raw frame batch (a
+     * multiple of the negotiated frame size) to the linked peer.
+     */
+    fun `sendAudioFrame`(`frames`: kotlin.ByteArray)
+    
+    /**
      * Send staged files (absolute paths, e.g. `cacheDir/outbox/...`) to the
-     * peer at `host` over FastSwap (LocalSend v2 three-way handshake +
+     * peer at `host` over FastSwap native three-way handshake +
      * parallel uploads). Returns the local session id for progress tracking.
      * Long-running — call from a background thread.
      */
@@ -2182,10 +2739,15 @@ public interface EcosystemNodeInterface {
     
     /**
      * Bind the eco HTTP/TLS ports, start discovery, the notification/clipboard
-     * sync loops, and the FastSwap (LocalSend v2) server so the phone is
+     * sync loops, and the FastSwap native server so the phone is
      * discoverable on both protocols.
      */
     fun `start`()
+    
+    /**
+     * Enterprise both-ways: pull peer backlog after connect.
+     */
+    fun `syncPeerLists`(`host`: kotlin.String): kotlin.String
     
     /**
      * Number of devices this node has ever trusted (persisted, so it survives
@@ -2236,7 +2798,7 @@ open class EcosystemNode: Disposable, AutoCloseable, EcosystemNodeInterface
      * manager and FastSwap storage seams. Does not bind any ports — call
      * [`EcosystemNode::start`] to boot servers + discovery.
      */
-    constructor(`config`: NodeConfig, `clipboardProvider`: ClipboardProvider, `notificationProvider`: NotificationProvider, `listener`: NodeEventListener?) :
+    constructor(`config`: NodeConfig, `clipboardProvider`: ClipboardProvider, `notificationProvider`: NotificationProvider, `contactProvider`: ContactProvider, `listener`: NodeEventListener?) :
         this(UniffiWithHandle, 
     uniffiRustCallWithError(FfiException) { _status ->
     UniffiLib.uniffi_igris_protocol_fn_constructor_ecosystemnode_new(
@@ -2245,6 +2807,7 @@ open class EcosystemNode: Disposable, AutoCloseable, EcosystemNodeInterface
         FfiConverterTypeNodeConfig.lower(`config`),
         FfiConverterTypeClipboardProvider.lower(`clipboardProvider`),
         FfiConverterTypeNotificationProvider.lower(`notificationProvider`),
+        FfiConverterTypeContactProvider.lower(`contactProvider`),
         FfiConverterOptionalTypeNodeEventListener.lower(`listener`),_status)
 }
     )
@@ -2340,6 +2903,26 @@ open class EcosystemNode: Disposable, AutoCloseable, EcosystemNodeInterface
 
     
     /**
+     * Enterprise: send a call control action to trusted peers.
+     * `dial` carries its target number (desk-initiated outgoing call).
+     */
+    @Throws(FfiException::class)override fun `callAction`(`callId`: kotlin.String, `action`: kotlin.String, `phoneNumber`: kotlin.String)
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(FfiException) { _status ->
+    UniffiLib.uniffi_igris_protocol_fn_method_ecosystemnode_call_action(
+        it,
+        
+        FfiConverterString.lower(`callId`),
+        FfiConverterString.lower(`action`),
+        FfiConverterString.lower(`phoneNumber`),_status)
+}
+    }
+    
+    
+
+    
+    /**
      * True when the most recent local clipboard content was delivered to at
      * least one linked peer. The a11y hook polls this to retry a push that
      * failed while peers were offline (dedup-on-failed-send fix).
@@ -2389,6 +2972,19 @@ open class EcosystemNode: Disposable, AutoCloseable, EcosystemNodeInterface
     
     
 
+    override fun `getCalls`(): List<CallInfo> {
+            return FfiConverterSequenceTypeCallInfo.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_igris_protocol_fn_method_ecosystemnode_get_calls(
+        it,
+        _status)
+}
+    }
+    )
+    }
+    
+
     
     /**
      * Current view of discovered + paired peers (eco subnet scan).
@@ -2430,6 +3026,19 @@ open class EcosystemNode: Disposable, AutoCloseable, EcosystemNodeInterface
         it,
         
         FfiConverterString.lower(`sessionId`),_status)
+}
+    }
+    )
+    }
+    
+
+    override fun `getSms`(): List<SmsInfo> {
+            return FfiConverterSequenceTypeSmsInfo.lift(
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_igris_protocol_fn_method_ecosystemnode_get_sms(
+        it,
+        _status)
 }
     }
     )
@@ -2506,6 +3115,45 @@ open class EcosystemNode: Disposable, AutoCloseable, EcosystemNodeInterface
 
     
     /**
+     * Enterprise: push a local call event and fan-out to trusted peers.
+     */
+    @Throws(FfiException::class)override fun `pushCall`(`callId`: kotlin.String, `event`: kotlin.String, `phoneNumber`: kotlin.String, `contactName`: kotlin.String)
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(FfiException) { _status ->
+    UniffiLib.uniffi_igris_protocol_fn_method_ecosystemnode_push_call(
+        it,
+        
+        FfiConverterString.lower(`callId`),
+        FfiConverterString.lower(`event`),
+        FfiConverterString.lower(`phoneNumber`),
+        FfiConverterString.lower(`contactName`),_status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Enterprise: push a call-log snapshot (the phone's call history) to
+     * trusted peers so the desktop mirrors it. Deduped peer-side by
+     * `call_id`; call once per connect, not per row.
+     */
+    @Throws(FfiException::class)override fun `pushCallLog`(`entries`: List<CallLogEntryInfo>)
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(FfiException) { _status ->
+    UniffiLib.uniffi_igris_protocol_fn_method_ecosystemnode_push_call_log(
+        it,
+        
+        FfiConverterSequenceTypeCallLogEntryInfo.lower(`entries`),_status)
+}
+    }
+    
+    
+
+    
+    /**
      * Push a clipboard change detected outside the poll loop (accessibility
      * hook / in-app paste). Feeds the same dedup + trusted-peers fan-out as
      * a locally-detected change. A failed fan-out is NOT committed, so an
@@ -2551,7 +3199,7 @@ open class EcosystemNode: Disposable, AutoCloseable, EcosystemNodeInterface
      * into the core: keyed dedup (updates in place), history, event, then
      * fan-out to trusted peers with the `notification_sync` capability over
      * `/notification/sync`. Icon bytes are skipped per-peer when the hash is
-     * unchanged (KDE-style); `icon_hash` is still sent so the peer can cache.
+     * unchanged (hash-skip); `icon_hash` is still sent so the peer can cache.
      */
     @Throws(FfiException::class)override fun `pushNotificationRich`(`rich`: RichNotificationInfo)
         = 
@@ -2568,8 +3216,66 @@ open class EcosystemNode: Disposable, AutoCloseable, EcosystemNodeInterface
 
     
     /**
+     * Enterprise: push a local SMS and fan-out to trusted peers.
+     */
+    @Throws(FfiException::class)override fun `pushSms`(`smsId`: kotlin.String, `threadId`: kotlin.String, `address`: kotlin.String, `body`: kotlin.String)
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(FfiException) { _status ->
+    UniffiLib.uniffi_igris_protocol_fn_method_ecosystemnode_push_sms(
+        it,
+        
+        FfiConverterString.lower(`smsId`),
+        FfiConverterString.lower(`threadId`),
+        FfiConverterString.lower(`address`),
+        FfiConverterString.lower(`body`),_status)
+}
+    }
+    
+    
+
+    
+    /**
+     * Enterprise: reply to a mirrored notification straight from the
+     * system shade (no app open). Routes to the originating device.
+     */
+    @Throws(FfiException::class)override fun `replyNotification`(`deviceId`: kotlin.String, `key`: kotlin.String, `text`: kotlin.String)
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(FfiException) { _status ->
+    UniffiLib.uniffi_igris_protocol_fn_method_ecosystemnode_reply_notification(
+        it,
+        
+        FfiConverterString.lower(`deviceId`),
+        FfiConverterString.lower(`key`),
+        FfiConverterString.lower(`text`),_status)
+}
+    }
+    
+    
+
+    
+    /**
+     * LAN audio: host capture loop pushes one raw frame batch (a
+     * multiple of the negotiated frame size) to the linked peer.
+     */
+    @Throws(FfiException::class)override fun `sendAudioFrame`(`frames`: kotlin.ByteArray)
+        = 
+    callWithHandle {
+    uniffiRustCallWithError(FfiException) { _status ->
+    UniffiLib.uniffi_igris_protocol_fn_method_ecosystemnode_send_audio_frame(
+        it,
+        
+        FfiConverterByteArray.lower(`frames`),_status)
+}
+    }
+    
+    
+
+    
+    /**
      * Send staged files (absolute paths, e.g. `cacheDir/outbox/...`) to the
-     * peer at `host` over FastSwap (LocalSend v2 three-way handshake +
+     * peer at `host` over FastSwap native three-way handshake +
      * parallel uploads). Returns the local session id for progress tracking.
      * Long-running — call from a background thread.
      */
@@ -2603,7 +3309,7 @@ open class EcosystemNode: Disposable, AutoCloseable, EcosystemNodeInterface
     
     /**
      * Bind the eco HTTP/TLS ports, start discovery, the notification/clipboard
-     * sync loops, and the FastSwap (LocalSend v2) server so the phone is
+     * sync loops, and the FastSwap native server so the phone is
      * discoverable on both protocols.
      */
     @Throws(FfiException::class)override fun `start`()
@@ -2616,6 +3322,24 @@ open class EcosystemNode: Disposable, AutoCloseable, EcosystemNodeInterface
 }
     }
     
+    
+
+    
+    /**
+     * Enterprise both-ways: pull peer backlog after connect.
+     */
+    @Throws(FfiException::class)override fun `syncPeerLists`(`host`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    callWithHandle {
+    uniffiRustCallWithError(FfiException) { _status ->
+    UniffiLib.uniffi_igris_protocol_fn_method_ecosystemnode_sync_peer_lists(
+        it,
+        
+        FfiConverterString.lower(`host`),_status)
+}
+    }
+    )
+    }
     
 
     
@@ -2824,9 +3548,37 @@ public interface NodeEventListener {
      */
     fun `onNotificationDismissRequested`(`key`: kotlin.String)
     
+    fun `onCallReceived`(`call`: CallInfo)
+    
+    fun `onSmsReceived`(`sms`: SmsInfo)
+    
+    /**
+     * A peer sent a call control action: mute | accept | decline | end |
+     * dial (dial carries the target number). The host executes it against
+     * the telecom stack.
+     */
+    fun `onCallAction`(`callId`: kotlin.String, `action`: kotlin.String, `phoneNumber`: kotlin.String)
+    
+    /**
+     * A peer asks this device to transmit an SMS via its SIM slot.
+     */
+    fun `onSmsSendRequested`(`address`: kotlin.String, `body`: kotlin.String)
+    
     fun `onTransferRequest`(`transfer`: IncomingTransfer)
     
     fun `onTransferProgress`(`progress`: TransferProgressInfo)
+    
+    /**
+     * LAN audio session: peer frames arrived (s16le mono at the
+     * negotiated rate). The host should feed its playback path.
+     */
+    fun `onAudioFrame`(`frame`: kotlin.ByteArray)
+    
+    /**
+     * LAN audio session opened/closed (`"true"` / `"false"` opens/closes
+     * the host's capture + playback engine).
+     */
+    fun `onAudioStreamState`(`state`: kotlin.String)
     
     fun `onLog`(`message`: kotlin.String)
     
@@ -3058,6 +3810,69 @@ open class NodeEventListenerImpl: Disposable, AutoCloseable, NodeEventListener
     
     
 
+    override fun `onCallReceived`(`call`: CallInfo)
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_igris_protocol_fn_method_nodeeventlistener_on_call_received(
+        it,
+        
+        FfiConverterTypeCallInfo.lower(`call`),_status)
+}
+    }
+    
+    
+
+    override fun `onSmsReceived`(`sms`: SmsInfo)
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_igris_protocol_fn_method_nodeeventlistener_on_sms_received(
+        it,
+        
+        FfiConverterTypeSmsInfo.lower(`sms`),_status)
+}
+    }
+    
+    
+
+    
+    /**
+     * A peer sent a call control action: mute | accept | decline | end |
+     * dial (dial carries the target number). The host executes it against
+     * the telecom stack.
+     */override fun `onCallAction`(`callId`: kotlin.String, `action`: kotlin.String, `phoneNumber`: kotlin.String)
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_igris_protocol_fn_method_nodeeventlistener_on_call_action(
+        it,
+        
+        FfiConverterString.lower(`callId`),
+        FfiConverterString.lower(`action`),
+        FfiConverterString.lower(`phoneNumber`),_status)
+}
+    }
+    
+    
+
+    
+    /**
+     * A peer asks this device to transmit an SMS via its SIM slot.
+     */override fun `onSmsSendRequested`(`address`: kotlin.String, `body`: kotlin.String)
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_igris_protocol_fn_method_nodeeventlistener_on_sms_send_requested(
+        it,
+        
+        FfiConverterString.lower(`address`),
+        FfiConverterString.lower(`body`),_status)
+}
+    }
+    
+    
+
     override fun `onTransferRequest`(`transfer`: IncomingTransfer)
         = 
     callWithHandle {
@@ -3079,6 +3894,40 @@ open class NodeEventListenerImpl: Disposable, AutoCloseable, NodeEventListener
         it,
         
         FfiConverterTypeTransferProgressInfo.lower(`progress`),_status)
+}
+    }
+    
+    
+
+    
+    /**
+     * LAN audio session: peer frames arrived (s16le mono at the
+     * negotiated rate). The host should feed its playback path.
+     */override fun `onAudioFrame`(`frame`: kotlin.ByteArray)
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_igris_protocol_fn_method_nodeeventlistener_on_audio_frame(
+        it,
+        
+        FfiConverterByteArray.lower(`frame`),_status)
+}
+    }
+    
+    
+
+    
+    /**
+     * LAN audio session opened/closed (`"true"` / `"false"` opens/closes
+     * the host's capture + playback engine).
+     */override fun `onAudioStreamState`(`state`: kotlin.String)
+        = 
+    callWithHandle {
+    uniffiRustCall() { _status ->
+    UniffiLib.uniffi_igris_protocol_fn_method_nodeeventlistener_on_audio_stream_state(
+        it,
+        
+        FfiConverterString.lower(`state`),_status)
 }
     }
     
@@ -3213,7 +4062,58 @@ internal object uniffiCallbackInterfaceNodeEventListener {
             uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
         }
     }
-    internal object `onTransferRequest`: UniffiCallbackInterfaceNodeEventListenerMethod8 {
+    internal object `onCallReceived`: UniffiCallbackInterfaceNodeEventListenerMethod8 {
+        override fun callback(`uniffiHandle`: Long,`call`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeNodeEventListener.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`onCallReceived`(
+                    FfiConverterTypeCallInfo.lift(`call`),
+                )
+            }
+            val writeReturn = { _: Unit -> Unit }
+            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
+        }
+    }
+    internal object `onSmsReceived`: UniffiCallbackInterfaceNodeEventListenerMethod9 {
+        override fun callback(`uniffiHandle`: Long,`sms`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeNodeEventListener.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`onSmsReceived`(
+                    FfiConverterTypeSmsInfo.lift(`sms`),
+                )
+            }
+            val writeReturn = { _: Unit -> Unit }
+            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
+        }
+    }
+    internal object `onCallAction`: UniffiCallbackInterfaceNodeEventListenerMethod10 {
+        override fun callback(`uniffiHandle`: Long,`callId`: RustBuffer.ByValue,`action`: RustBuffer.ByValue,`phoneNumber`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeNodeEventListener.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`onCallAction`(
+                    FfiConverterString.lift(`callId`),
+                    FfiConverterString.lift(`action`),
+                    FfiConverterString.lift(`phoneNumber`),
+                )
+            }
+            val writeReturn = { _: Unit -> Unit }
+            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
+        }
+    }
+    internal object `onSmsSendRequested`: UniffiCallbackInterfaceNodeEventListenerMethod11 {
+        override fun callback(`uniffiHandle`: Long,`address`: RustBuffer.ByValue,`body`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeNodeEventListener.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`onSmsSendRequested`(
+                    FfiConverterString.lift(`address`),
+                    FfiConverterString.lift(`body`),
+                )
+            }
+            val writeReturn = { _: Unit -> Unit }
+            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
+        }
+    }
+    internal object `onTransferRequest`: UniffiCallbackInterfaceNodeEventListenerMethod12 {
         override fun callback(`uniffiHandle`: Long,`transfer`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
             val uniffiObj = FfiConverterTypeNodeEventListener.handleMap.get(uniffiHandle)
             val makeCall = { ->
@@ -3225,7 +4125,7 @@ internal object uniffiCallbackInterfaceNodeEventListener {
             uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
         }
     }
-    internal object `onTransferProgress`: UniffiCallbackInterfaceNodeEventListenerMethod9 {
+    internal object `onTransferProgress`: UniffiCallbackInterfaceNodeEventListenerMethod13 {
         override fun callback(`uniffiHandle`: Long,`progress`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
             val uniffiObj = FfiConverterTypeNodeEventListener.handleMap.get(uniffiHandle)
             val makeCall = { ->
@@ -3237,7 +4137,31 @@ internal object uniffiCallbackInterfaceNodeEventListener {
             uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
         }
     }
-    internal object `onLog`: UniffiCallbackInterfaceNodeEventListenerMethod10 {
+    internal object `onAudioFrame`: UniffiCallbackInterfaceNodeEventListenerMethod14 {
+        override fun callback(`uniffiHandle`: Long,`frame`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeNodeEventListener.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`onAudioFrame`(
+                    FfiConverterByteArray.lift(`frame`),
+                )
+            }
+            val writeReturn = { _: Unit -> Unit }
+            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
+        }
+    }
+    internal object `onAudioStreamState`: UniffiCallbackInterfaceNodeEventListenerMethod15 {
+        override fun callback(`uniffiHandle`: Long,`state`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeNodeEventListener.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`onAudioStreamState`(
+                    FfiConverterString.lift(`state`),
+                )
+            }
+            val writeReturn = { _: Unit -> Unit }
+            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
+        }
+    }
+    internal object `onLog`: UniffiCallbackInterfaceNodeEventListenerMethod16 {
         override fun callback(`uniffiHandle`: Long,`message`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
             val uniffiObj = FfiConverterTypeNodeEventListener.handleMap.get(uniffiHandle)
             val makeCall = { ->
@@ -3273,8 +4197,14 @@ internal object uniffiCallbackInterfaceNodeEventListener {
         `onNotificationReplyRequested`,
         `onNotificationActionRequested`,
         `onNotificationDismissRequested`,
+        `onCallReceived`,
+        `onSmsReceived`,
+        `onCallAction`,
+        `onSmsSendRequested`,
         `onTransferRequest`,
         `onTransferProgress`,
+        `onAudioFrame`,
+        `onAudioStreamState`,
         `onLog`,
     )
 
@@ -3747,7 +4677,139 @@ public object FfiConverterTypeNotificationProvider: FfiConverter<NotificationPro
 
 
 /**
- * Clipboard payload moved across devices.
+ * Enterprise call event (Igris native).
+ */
+data class CallInfo (
+    var `callId`: kotlin.String
+    , 
+    var `event`: kotlin.String
+    , 
+    var `phoneNumber`: kotlin.String
+    , 
+    var `contactName`: kotlin.String
+    , 
+    var `deviceName`: kotlin.String
+    , 
+    var `deviceId`: kotlin.String
+    , 
+    var `timestamp`: kotlin.Long
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeCallInfo: FfiConverterRustBuffer<CallInfo> {
+    override fun read(buf: ByteBuffer): CallInfo {
+        return CallInfo(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterLong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: CallInfo) = (
+            FfiConverterString.allocationSize(value.`callId`) +
+            FfiConverterString.allocationSize(value.`event`) +
+            FfiConverterString.allocationSize(value.`phoneNumber`) +
+            FfiConverterString.allocationSize(value.`contactName`) +
+            FfiConverterString.allocationSize(value.`deviceName`) +
+            FfiConverterString.allocationSize(value.`deviceId`) +
+            FfiConverterLong.allocationSize(value.`timestamp`)
+    )
+
+    override fun write(value: CallInfo, buf: ByteBuffer) {
+            FfiConverterString.write(value.`callId`, buf)
+            FfiConverterString.write(value.`event`, buf)
+            FfiConverterString.write(value.`phoneNumber`, buf)
+            FfiConverterString.write(value.`contactName`, buf)
+            FfiConverterString.write(value.`deviceName`, buf)
+            FfiConverterString.write(value.`deviceId`, buf)
+            FfiConverterLong.write(value.`timestamp`, buf)
+    }
+}
+
+
+
+/**
+ * One call-history row pushed from the phone's call log to linked peers.
+ */
+data class CallLogEntryInfo (
+    var `callId`: kotlin.String
+    , 
+    var `event`: kotlin.String
+    , 
+    var `phoneNumber`: kotlin.String
+    , 
+    var `contactName`: kotlin.String
+    , 
+    var `timestamp`: kotlin.Long
+    , 
+    var `durationSeconds`: kotlin.Long
+    , 
+    var `callType`: kotlin.String
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeCallLogEntryInfo: FfiConverterRustBuffer<CallLogEntryInfo> {
+    override fun read(buf: ByteBuffer): CallLogEntryInfo {
+        return CallLogEntryInfo(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: CallLogEntryInfo) = (
+            FfiConverterString.allocationSize(value.`callId`) +
+            FfiConverterString.allocationSize(value.`event`) +
+            FfiConverterString.allocationSize(value.`phoneNumber`) +
+            FfiConverterString.allocationSize(value.`contactName`) +
+            FfiConverterLong.allocationSize(value.`timestamp`) +
+            FfiConverterLong.allocationSize(value.`durationSeconds`) +
+            FfiConverterString.allocationSize(value.`callType`)
+    )
+
+    override fun write(value: CallLogEntryInfo, buf: ByteBuffer) {
+            FfiConverterString.write(value.`callId`, buf)
+            FfiConverterString.write(value.`event`, buf)
+            FfiConverterString.write(value.`phoneNumber`, buf)
+            FfiConverterString.write(value.`contactName`, buf)
+            FfiConverterLong.write(value.`timestamp`, buf)
+            FfiConverterLong.write(value.`durationSeconds`, buf)
+            FfiConverterString.write(value.`callType`, buf)
+    }
+}
+
+
+
+/**
+ * Clipboard payload moved across devices (enterprise: text or base64 media).
  */
 data class ClipboardDataInfo (
     var `content`: kotlin.String
@@ -3759,6 +4821,14 @@ data class ClipboardDataInfo (
     var `sourceDevice`: kotlin.String
     , 
     var `timestamp`: kotlin.Long
+    , 
+    var `encoding`: kotlin.String
+    , 
+    var `fileName`: kotlin.String
+    , 
+    var `mimeType`: kotlin.String
+    , 
+    var `byteSize`: kotlin.ULong
     
 ){
     
@@ -3780,6 +4850,10 @@ public object FfiConverterTypeClipboardDataInfo: FfiConverterRustBuffer<Clipboar
             FfiConverterString.read(buf),
             FfiConverterString.read(buf),
             FfiConverterLong.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterULong.read(buf),
         )
     }
 
@@ -3788,7 +4862,11 @@ public object FfiConverterTypeClipboardDataInfo: FfiConverterRustBuffer<Clipboar
             FfiConverterString.allocationSize(value.`contentType`) +
             FfiConverterString.allocationSize(value.`contentHash`) +
             FfiConverterString.allocationSize(value.`sourceDevice`) +
-            FfiConverterLong.allocationSize(value.`timestamp`)
+            FfiConverterLong.allocationSize(value.`timestamp`) +
+            FfiConverterString.allocationSize(value.`encoding`) +
+            FfiConverterString.allocationSize(value.`fileName`) +
+            FfiConverterString.allocationSize(value.`mimeType`) +
+            FfiConverterULong.allocationSize(value.`byteSize`)
     )
 
     override fun write(value: ClipboardDataInfo, buf: ByteBuffer) {
@@ -3797,6 +4875,51 @@ public object FfiConverterTypeClipboardDataInfo: FfiConverterRustBuffer<Clipboar
             FfiConverterString.write(value.`contentHash`, buf)
             FfiConverterString.write(value.`sourceDevice`, buf)
             FfiConverterLong.write(value.`timestamp`, buf)
+            FfiConverterString.write(value.`encoding`, buf)
+            FfiConverterString.write(value.`fileName`, buf)
+            FfiConverterString.write(value.`mimeType`, buf)
+            FfiConverterULong.write(value.`byteSize`, buf)
+    }
+}
+
+
+
+/**
+ * A phonebook hit (name + callable number) from the host provider.
+ */
+data class ContactHitInfo (
+    var `name`: kotlin.String
+    , 
+    var `number`: kotlin.String
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeContactHitInfo: FfiConverterRustBuffer<ContactHitInfo> {
+    override fun read(buf: ByteBuffer): ContactHitInfo {
+        return ContactHitInfo(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: ContactHitInfo) = (
+            FfiConverterString.allocationSize(value.`name`) +
+            FfiConverterString.allocationSize(value.`number`)
+    )
+
+    override fun write(value: ContactHitInfo, buf: ByteBuffer) {
+            FfiConverterString.write(value.`name`, buf)
+            FfiConverterString.write(value.`number`, buf)
     }
 }
 
@@ -4081,6 +5204,12 @@ data class NodeConfig (
     var `clipboardEnabled`: kotlin.Boolean
     , 
     var `notificationEnabled`: kotlin.Boolean
+    , 
+    var `callEnabled`: kotlin.Boolean = false 
+    , 
+    var `smsEnabled`: kotlin.Boolean = false 
+    , 
+    var `clipboardMediaEnabled`: kotlin.Boolean = false 
     
 ){
     
@@ -4105,6 +5234,9 @@ public object FfiConverterTypeNodeConfig: FfiConverterRustBuffer<NodeConfig> {
             FfiConverterBoolean.read(buf),
             FfiConverterBoolean.read(buf),
             FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterBoolean.read(buf),
         )
     }
 
@@ -4116,7 +5248,10 @@ public object FfiConverterTypeNodeConfig: FfiConverterRustBuffer<NodeConfig> {
             FfiConverterString.allocationSize(value.`downloadsDir`) +
             FfiConverterBoolean.allocationSize(value.`servePlainHttp`) +
             FfiConverterBoolean.allocationSize(value.`clipboardEnabled`) +
-            FfiConverterBoolean.allocationSize(value.`notificationEnabled`)
+            FfiConverterBoolean.allocationSize(value.`notificationEnabled`) +
+            FfiConverterBoolean.allocationSize(value.`callEnabled`) +
+            FfiConverterBoolean.allocationSize(value.`smsEnabled`) +
+            FfiConverterBoolean.allocationSize(value.`clipboardMediaEnabled`)
     )
 
     override fun write(value: NodeConfig, buf: ByteBuffer) {
@@ -4128,6 +5263,9 @@ public object FfiConverterTypeNodeConfig: FfiConverterRustBuffer<NodeConfig> {
             FfiConverterBoolean.write(value.`servePlainHttp`, buf)
             FfiConverterBoolean.write(value.`clipboardEnabled`, buf)
             FfiConverterBoolean.write(value.`notificationEnabled`, buf)
+            FfiConverterBoolean.write(value.`callEnabled`, buf)
+            FfiConverterBoolean.write(value.`smsEnabled`, buf)
+            FfiConverterBoolean.write(value.`clipboardMediaEnabled`, buf)
     }
 }
 
@@ -4348,6 +5486,72 @@ public object FfiConverterTypeRichNotificationInfo: FfiConverterRustBuffer<RichN
             FfiConverterSequenceString.write(value.`actions`, buf)
             FfiConverterBoolean.write(value.`canReply`, buf)
             FfiConverterSequenceTypeNotificationMessageInfo.write(value.`messages`, buf)
+    }
+}
+
+
+
+/**
+ * Enterprise SMS (Igris native).
+ */
+data class SmsInfo (
+    var `smsId`: kotlin.String
+    , 
+    var `threadId`: kotlin.String
+    , 
+    var `address`: kotlin.String
+    , 
+    var `body`: kotlin.String
+    , 
+    var `date`: kotlin.Long
+    , 
+    var `deviceName`: kotlin.String
+    , 
+    var `deviceId`: kotlin.String
+    
+){
+    
+
+    
+
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSmsInfo: FfiConverterRustBuffer<SmsInfo> {
+    override fun read(buf: ByteBuffer): SmsInfo {
+        return SmsInfo(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: SmsInfo) = (
+            FfiConverterString.allocationSize(value.`smsId`) +
+            FfiConverterString.allocationSize(value.`threadId`) +
+            FfiConverterString.allocationSize(value.`address`) +
+            FfiConverterString.allocationSize(value.`body`) +
+            FfiConverterLong.allocationSize(value.`date`) +
+            FfiConverterString.allocationSize(value.`deviceName`) +
+            FfiConverterString.allocationSize(value.`deviceId`)
+    )
+
+    override fun write(value: SmsInfo, buf: ByteBuffer) {
+            FfiConverterString.write(value.`smsId`, buf)
+            FfiConverterString.write(value.`threadId`, buf)
+            FfiConverterString.write(value.`address`, buf)
+            FfiConverterString.write(value.`body`, buf)
+            FfiConverterLong.write(value.`date`, buf)
+            FfiConverterString.write(value.`deviceName`, buf)
+            FfiConverterString.write(value.`deviceId`, buf)
     }
 }
 
@@ -4583,6 +5787,90 @@ public object FfiConverterSequenceString: FfiConverterRustBuffer<List<kotlin.Str
 /**
  * @suppress
  */
+public object FfiConverterSequenceTypeCallInfo: FfiConverterRustBuffer<List<CallInfo>> {
+    override fun read(buf: ByteBuffer): List<CallInfo> {
+        val len = buf.getInt()
+        return List<CallInfo>(len) {
+            FfiConverterTypeCallInfo.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<CallInfo>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeCallInfo.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<CallInfo>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeCallInfo.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeCallLogEntryInfo: FfiConverterRustBuffer<List<CallLogEntryInfo>> {
+    override fun read(buf: ByteBuffer): List<CallLogEntryInfo> {
+        val len = buf.getInt()
+        return List<CallLogEntryInfo>(len) {
+            FfiConverterTypeCallLogEntryInfo.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<CallLogEntryInfo>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeCallLogEntryInfo.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<CallLogEntryInfo>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeCallLogEntryInfo.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeContactHitInfo: FfiConverterRustBuffer<List<ContactHitInfo>> {
+    override fun read(buf: ByteBuffer): List<ContactHitInfo> {
+        val len = buf.getInt()
+        return List<ContactHitInfo>(len) {
+            FfiConverterTypeContactHitInfo.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<ContactHitInfo>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeContactHitInfo.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<ContactHitInfo>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeContactHitInfo.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterSequenceTypeDeviceInfo: FfiConverterRustBuffer<List<DeviceInfo>> {
     override fun read(buf: ByteBuffer): List<DeviceInfo> {
         val len = buf.getInt()
@@ -4741,6 +6029,34 @@ public object FfiConverterSequenceTypeRawNotificationInfo: FfiConverterRustBuffe
         buf.putInt(value.size)
         value.iterator().forEach {
             FfiConverterTypeRawNotificationInfo.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeSmsInfo: FfiConverterRustBuffer<List<SmsInfo>> {
+    override fun read(buf: ByteBuffer): List<SmsInfo> {
+        val len = buf.getInt()
+        return List<SmsInfo>(len) {
+            FfiConverterTypeSmsInfo.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<SmsInfo>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeSmsInfo.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<SmsInfo>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeSmsInfo.write(it, buf)
         }
     }
 }

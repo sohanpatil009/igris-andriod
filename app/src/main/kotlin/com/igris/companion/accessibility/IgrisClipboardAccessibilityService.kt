@@ -40,7 +40,7 @@ class IgrisClipboardAccessibilityService : AccessibilityService() {
     @Volatile
     private var retryNotBeforeMs: Long = 0
 
-    /** Copy-gesture detector (Sefirah/XClipper heuristics). */
+    /** Copy-gesture detector (see [ClipboardDetection]). */
     private var detector: ClipboardDetection? = null
     private var lastGestureMs: Long = 0
     private val eventCounts = java.util.concurrent.ConcurrentHashMap<Int, Int>()
@@ -82,8 +82,8 @@ class IgrisClipboardAccessibilityService : AccessibilityService() {
     }
 
     /**
-     * Copy-gesture detection (Sefirah/XClipper heuristics — see
-     * [ClipboardDetection]). HyperOS withholds the clip-changed callback for
+     * Copy-gesture detection (see [ClipboardDetection]). HyperOS withholds
+     * the clip-changed callback for
      * background apps, so "the user copied something" is inferred from the
      * tap on Copy/Cut, the collapsing selection, or the copied-toast, and the
      * grab activity is raised to do the actual read.
@@ -170,7 +170,7 @@ class IgrisClipboardAccessibilityService : AccessibilityService() {
         val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val text = readClip(cm)
         if (text.isNullOrEmpty()) {
-            // Android 10+ (and MIUI): background reads are denied. KDE-Connect
+            // Android 10+ (and MIUI): background reads are denied. Igris
             // trick: raise a tiny transparent activity to claim foreground,
             // read there, then it finishes itself.
             if (!com.igris.companion.ForegroundState.isForeground) {
@@ -204,7 +204,7 @@ class IgrisClipboardAccessibilityService : AccessibilityService() {
 
     private fun readClip(cm: ClipboardManager): String? = try {
         val clip = cm.primaryClip ?: return null
-        // KDE-style password guard: skip clips the source app marked
+        // hash-skip password guard: skip clips the source app marked
         // sensitive (password managers set EXTRA_IS_SENSITIVE).
         if (clip.description?.extras
                 ?.getBoolean(android.content.ClipDescription.EXTRA_IS_SENSITIVE) == true

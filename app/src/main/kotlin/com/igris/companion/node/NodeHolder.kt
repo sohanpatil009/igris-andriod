@@ -55,6 +55,9 @@ object NodeHolder {
                     servePlainHttp = false,
                     clipboardEnabled = true,
                     notificationEnabled = true,
+                    callEnabled = true,
+                    smsEnabled = true,
+                    clipboardMediaEnabled = true,
                 )
                 val providers = PlatformProviders(app)
                 AppEventListener.appContext = app
@@ -63,6 +66,7 @@ object NodeHolder {
                     config = config,
                     clipboardProvider = providers.clipboard,
                     notificationProvider = providers.notification,
+                    contactProvider = com.igris.companion.providers.ContactProviderImpl(app),
                     listener = AppEventListener,
                 )
                 n.start()

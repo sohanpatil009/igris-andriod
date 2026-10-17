@@ -21,10 +21,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.igris.companion.identity.IdentityStore
 import com.igris.companion.permissions.PermissionStatus
 import com.igris.companion.power.OemPower
+import com.igris.companion.ui.SectionHeader
+import com.igris.companion.ui.theme.IgrisTokens
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -48,15 +51,17 @@ fun SettingsTab() {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)
     ) {
-        Text("Settings", style = MaterialTheme.typography.titleLarge)
+        SectionHeader("SETTINGS")
         Text(
             "Device ID (lowercase UUID, persisted in DataStore):",
             style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(top = 12.dp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 8.dp),
         )
         Text(
             deviceId.ifEmpty { "loading…" },
             style = MaterialTheme.typography.bodySmall,
+            fontFamily = FontFamily.Monospace,
             modifier = Modifier.padding(top = 4.dp),
         )
 

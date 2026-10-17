@@ -9,7 +9,7 @@ import com.igris.companion.node.NodeHolder
 import java.io.File
 
 /**
- * KDE-Connect-style clipboard grab (KDE: ClipboardFloatingActivity).
+ * Igris native clipboard grab (Igris: ClipboardGrabActivity).
  *
  * Android 10+ denies clipboard reads to background apps, and MIUI removes the
  * accessibility-service exemption too. When a copy gesture is detected (or
@@ -22,7 +22,7 @@ import java.io.File
  * tap, before the write lands), so a late-differing read is pushed too.
  *
  * Requires SYSTEM_ALERT_WINDOW (adb: `appops set <pkg> SYSTEM_ALERT_WINDOW
- * allow`) to make background activity launches legal, mirroring KDE.
+ * allow`) to make background activity launches legal, using Igris native.
  */
 class ClipboardGrabActivity : Activity() {
 
@@ -49,15 +49,14 @@ class ClipboardGrabActivity : Activity() {
         if (!hasFocus) return
 
         // Gesture-triggered grabs race the copy commit; give the source app
-        // a beat to finish writing the clip before reading (Sefirah uses
-        // the same delay).
+        // a beat to finish writing the clip before reading.
         handler.postDelayed({ if (!isFinishing) readAndPush() }, 450)
     }
 
     private fun readAndPush() {
         when (val clip = readClip()) {
             ReadResult.Denied, ReadResult.Sensitive ->
-                // Sensitive clips are never synced (KDE-style guard); denied
+                // Sensitive clips are never synced (hash-skip guard); denied
                 // means nothing to do from this vantage either.
                 if (clip == ReadResult.Sensitive) logLine("grab: sensitive clip, skipping")
             is ReadResult.Text ->
@@ -139,3 +138,4 @@ class ClipboardGrabActivity : Activity() {
         }
     }
 }
+

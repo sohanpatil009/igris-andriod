@@ -108,7 +108,7 @@ object AppEventListener : NodeEventListener {
 
     override fun onDeviceUpdated(device: DeviceInfo) = log("device updated: ${device.name} ${device.ip}")
     override fun onDeviceRemoved(deviceId: String) = log("device removed: $deviceId")
-    override fun onClipboardReceived(data: ClipboardDataInfo) = log("clipboard: ${data.contentHash.take(8)}")
+    override fun onClipboardReceived(data: ClipboardDataInfo) = log("clipboard: ${data.contentHash.take(8)} encoding=${data.encoding} mime=${data.mimeType}")
     override fun onClipboardReceivedFrom(data: ClipboardDataInfo) {
         log("received from peer: ${data.contentHash.take(8)}")
         val ctx = appContext ?: return
@@ -136,6 +136,9 @@ object AppEventListener : NodeEventListener {
             title = "${notification.appName} — ${notification.deviceName}",
             text = listOf(notification.title, notification.body)
                 .filter { it.isNotBlank() }.joinToString("\n"),
+            replyKey = notification.notificationKey.ifBlank { notification.id },
+            replyDeviceId = notification.deviceId,
+            canReply = notification.canReply,
         )
     }
 
@@ -157,6 +160,58 @@ object AppEventListener : NodeEventListener {
         com.igris.companion.notifications.IgrisNotificationListener.dismiss(key)
     }
 
+    override fun onCallReceived(call: uniffi.igris_protocol.CallInfo) {
+        log("call: ${call.event} ${call.phoneNumber}")
+        val ctx = appContext ?: return
+        if (call.deviceId == localDeviceId) return
+        postSystemNotification(
+            ctx,
+            channelId = "igris_calls",
+            title = "IGRIS call — ${call.deviceName}",
+            text = "${call.event}: ${call.contactName.ifBlank { call.phoneNumber }}",
+        )
+    }
+
+    /** Peer sent a call control action — execute it on the telecom stack. */
+    override fun onCallAction(callId: String, action: String, phoneNumber: String) {
+        log("call action: $action $phoneNumber")
+        val ctx = appContext ?: return
+        com.igris.companion.calls.CallSmsBridge.executeAction(ctx, callId, action, phoneNumber)
+    }
+
+    override fun onSmsReceived(sms: uniffi.igris_protocol.SmsInfo) {
+        log("sms from ${sms.address}")
+        val ctx = appContext ?: return
+        if (sms.deviceId == localDeviceId) return
+        postSystemNotification(
+            ctx,
+            channelId = "igris_sms",
+            title = "IGRIS SMS — ${sms.deviceName}",
+            text = "${sms.address}: ${sms.body.take(200)}",
+        )
+    }
+
+    /** Peer asked this phone to transmit an SMS via its SIM slot. */
+    override fun onSmsSendRequested(address: String, body: String) {
+        log("sms send requested: $address (${body.length} chars)")
+        val ctx = appContext ?: return
+        try {
+            val sm = ctx.getSystemService(android.telephony.SmsManager::class.java)
+                ?: return
+            val parts = sm.divideMessage(body)
+            if (parts.size <= 1) {
+                sm.sendTextMessage(address, null, body, null, null)
+            } else {
+                sm.sendMultipartTextMessage(address, null, parts, null, null)
+            }
+            log("sms transmitted to $address")
+        } catch (e: SecurityException) {
+            log("sms send needs SEND_SMS grant: $e")
+        } catch (t: Throwable) {
+            log("sms send failed: $t")
+        }
+    }
+
     override fun onTransferRequest(transfer: IncomingTransfer) {
         log("incoming: ${transfer.fileCount} file(s) from ${transfer.senderName}")
         // A transfer only waits 60s for approval — alert even if the app is
@@ -173,9 +228,29 @@ object AppEventListener : NodeEventListener {
     }
 
     override fun onTransferProgress(progress: TransferProgressInfo) = log("progress ${progress.overallPercent.toInt()}%")
+
+    /** LAN audio link: peer frame arrived — feed the duplex engine. */
+    override fun onAudioFrame(frame: ByteArray) {
+        com.igris.companion.audio.AudioEngine.onAudioFrame(frame)
+    }
+
+    /** LAN audio link opened/closed — start/stop the phone audio engine. */
+    override fun onAudioStreamState(state: String) {
+        log("audio stream state: $state")
+        com.igris.companion.audio.AudioEngine.onSessionStateChanged(state)
+    }
+
     override fun onLog(message: String) = log(message)
 
-    private fun postSystemNotification(ctx: android.content.Context, channelId: String, title: String, text: String) {
+    private fun postSystemNotification(
+        ctx: android.content.Context,
+        channelId: String,
+        title: String,
+        text: String,
+        replyKey: String = "",
+        replyDeviceId: String = "",
+        canReply: Boolean = false,
+    ) {
         try {
             val nm = ctx.getSystemService(android.content.Context.NOTIFICATION_SERVICE)
                 as android.app.NotificationManager
@@ -190,15 +265,50 @@ object AppEventListener : NodeEventListener {
                 android.content.Intent(ctx, com.igris.companion.MainActivity::class.java),
                 android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE,
             )
-            val notif = androidx.core.app.NotificationCompat.Builder(ctx, channelId)
+            val notifyId = (channelId + title + text).hashCode()
+            val builder = androidx.core.app.NotificationCompat.Builder(ctx, channelId)
                 .setSmallIcon(com.igris.companion.R.drawable.ic_launcher_foreground)
                 .setContentTitle(title)
                 .setContentText(text)
                 .setStyle(androidx.core.app.NotificationCompat.BigTextStyle().bigText(text))
                 .setAutoCancel(true)
                 .setContentIntent(openIntent)
-                .build()
-            nm.notify(title.hashCode(), notif)
+            // Shade direct-reply: no app open needed. RemoteInput requires a
+            // MUTABLE PendingIntent; the receiver routes by stored key+device.
+            if (canReply && replyKey.isNotBlank() && replyDeviceId.isNotBlank()) {
+                val replyIntent = android.content.Intent(
+                    ctx,
+                    com.igris.companion.notifications.MirrorReplyReceiver::class.java,
+                ).apply {
+                    putExtra(
+                        com.igris.companion.notifications.MirrorReplyReceiver.EXTRA_KEY,
+                        replyKey,
+                    )
+                    putExtra(
+                        com.igris.companion.notifications.MirrorReplyReceiver.EXTRA_DEVICE,
+                        replyDeviceId,
+                    )
+                    putExtra(
+                        com.igris.companion.notifications.MirrorReplyReceiver.EXTRA_NOTIFY_ID,
+                        notifyId,
+                    )
+                }
+                val replyPending = android.app.PendingIntent.getBroadcast(
+                    ctx, notifyId,
+                    replyIntent,
+                    android.app.PendingIntent.FLAG_UPDATE_CURRENT or
+                        android.app.PendingIntent.FLAG_MUTABLE,
+                )
+                val remoteInput = androidx.core.app.RemoteInput.Builder(
+                    com.igris.companion.notifications.MirrorReplyReceiver.REPLY_KEY,
+                ).setLabel("Reply").build()
+                builder.addAction(
+                    androidx.core.app.NotificationCompat.Action.Builder(
+                        0, "Reply", replyPending,
+                    ).addRemoteInput(remoteInput).build(),
+                )
+            }
+            nm.notify(notifyId, builder.build())
         } catch (e: Exception) {
             log("post notification failed: $e")
         }

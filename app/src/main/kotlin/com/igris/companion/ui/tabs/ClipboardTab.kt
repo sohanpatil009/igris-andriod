@@ -8,17 +8,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.igris.companion.ui.SectionHeader
 
 @Composable
 fun ClipboardTab() {
     Column(Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Clipboard", style = MaterialTheme.typography.titleLarge)
+        SectionHeader("CLIPBOARD")
         Text(
-            "Clipboard sync ships in Phase 4 (SHA-256 dedup in the core). " +
-                "Note: Android 10+ restricts background clipboard reads, so the " +
-                "sync loop only catches changes while the app is foreground.",
+            "Text syncs live across linked devices (SHA-256 dedup). Images " +
+                "and files sync as media when the peer supports it. " +
+                "Note: Android 10+ only delivers clipboard reads while the " +
+                "app is foreground — the accessibility service and Quick " +
+                "Settings tile cover background copies.",
             style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(top = 12.dp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 8.dp),
         )
     }
 }

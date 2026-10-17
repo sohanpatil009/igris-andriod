@@ -5,9 +5,6 @@ import android.view.accessibility.AccessibilityEvent
 /**
  * Copy/cut gesture detection from accessibility events.
  *
- * Adapted from Sefirah (github.com/shrimqy/Sefirah-Android), which adapts
- * XClipper by Kaustubh Patange — both Apache License 2.0.
- *
  * Android 10+ denies clipboard reads to background apps and some OEM skins
  * (HyperOS/MIUI notably) withhold the clip-changed callback and even
  * text-selection events, so "the clipboard changed" is inferred from HOW the
@@ -84,8 +81,8 @@ class ClipboardDetection(
             return null
         }
 
-        // Tap on the Copy/Cut button itself. Downside (inherited from
-        // XClipper): tapping any text containing the word can false-positive.
+        // Tap on the Copy/Cut button itself. Downside: tapping any text
+        // containing the word can false-positive.
         if (e.eventType == AccessibilityEvent.TYPE_VIEW_CLICKED &&
             (e.contentDescription.matchesWord() || e.text.matchesWord())
         ) {

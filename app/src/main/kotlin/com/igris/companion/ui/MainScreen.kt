@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
@@ -21,6 +22,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.igris.companion.ui.tabs.CallsTab
 import com.igris.companion.ui.tabs.ClipboardTab
 import com.igris.companion.ui.tabs.DevicesTab
 import com.igris.companion.ui.tabs.NotificationsTab
@@ -31,6 +33,7 @@ private data class TabSpec(val label: String, val icon: ImageVector)
 
 private val tabs = listOf(
     TabSpec("Devices", Icons.Filled.Home),
+    TabSpec("Calls", Icons.Filled.Call),
     TabSpec("Clipboard", Icons.Filled.Create),
     TabSpec("Notifications", Icons.Filled.Notifications),
     TabSpec("Transfers", Icons.AutoMirrored.Filled.Send),
@@ -57,9 +60,10 @@ fun MainScreen() {
         Box(Modifier.fillMaxSize().padding(padding)) {
             when (selected) {
                 0 -> DevicesTab()
-                1 -> ClipboardTab()
-                2 -> NotificationsTab()
-                3 -> TransfersTab()
+                1 -> CallsTab()
+                2 -> ClipboardTab()
+                3 -> NotificationsTab()
+                4 -> TransfersTab()
                 else -> SettingsTab()
             }
         }
