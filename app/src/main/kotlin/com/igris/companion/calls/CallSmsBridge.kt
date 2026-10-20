@@ -1,6 +1,7 @@
 package com.igris.companion.calls
 
 import android.content.Context
+import android.os.Build
 import android.provider.CallLog
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
@@ -25,24 +26,41 @@ object CallSmsBridge {
         try {
             val tm = context.getSystemService(Context.TELEPHONY_SERVICE) as? TelephonyManager
                 ?: return
-            @Suppress("DEPRECATION")
-            tm.listen(object : PhoneStateListener() {
-                @Deprecated("Deprecated in Java")
-                override fun onCallStateChanged(state: Int, phoneNumber: String?) {
-                    val event = when (state) {
-                        TelephonyManager.CALL_STATE_RINGING -> "ringing"
-                        TelephonyManager.CALL_STATE_OFFHOOK -> "talking"
-                        else -> if (lastState != TelephonyManager.CALL_STATE_IDLE) "ended" else return
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val callback = object : android.telephony.TelephonyCallback(),
+                    android.telephony.TelephonyCallback.CallStateListener {
+                    override fun onCallStateChanged(state: Int) {
+                        handleCallState(state, "")
                     }
-                    lastState = state
-                    pushCall(event, phoneNumber.orEmpty())
                 }
-            }, PhoneStateListener.LISTEN_CALL_STATE)
+                tm.registerTelephonyCallback(
+                    context.mainExecutor,
+                    callback
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                tm.listen(object : PhoneStateListener() {
+                    @Deprecated("Deprecated in Java")
+                    override fun onCallStateChanged(state: Int, phoneNumber: String?) {
+                        handleCallState(state, phoneNumber.orEmpty())
+                    }
+                }, PhoneStateListener.LISTEN_CALL_STATE)
+            }
         } catch (e: SecurityException) {
             Log.w(TAG, "call bridge: READ_PHONE_STATE not granted: $e")
         } catch (t: Throwable) {
             Log.w(TAG, "call bridge start failed", t)
         }
+    }
+
+    private fun handleCallState(state: Int, phoneNumber: String) {
+        val event = when (state) {
+            TelephonyManager.CALL_STATE_RINGING -> "ringing"
+            TelephonyManager.CALL_STATE_OFFHOOK -> "talking"
+            else -> if (lastState != TelephonyManager.CALL_STATE_IDLE) "ended" else return
+        }
+        lastState = state
+        pushCall(event, phoneNumber)
     }
 
     fun pushCall(event: String, phoneNumber: String, contactName: String = "") {
@@ -95,7 +113,7 @@ object CallSmsBridge {
             ),
             null,
             null,
-            "${CallLog.Calls.DATE} DESC LIMIT 200",
+            "${CallLog.Calls.DATE} DESC",
         )?.use { c ->
             val iId = c.getColumnIndexOrThrow(CallLog.Calls._ID)
             val iNum = c.getColumnIndexOrThrow(CallLog.Calls.NUMBER)
@@ -103,7 +121,7 @@ object CallSmsBridge {
             val iDur = c.getColumnIndexOrThrow(CallLog.Calls.DURATION)
             val iType = c.getColumnIndexOrThrow(CallLog.Calls.TYPE)
             val iName = c.getColumnIndex(CallLog.Calls.CACHED_NAME)
-            while (c.moveToNext()) {
+            while (c.moveToNext() && out.size < 200) {
                 val rowId = c.getLong(iId)
                 val number = c.getString(iNum).orEmpty()
                 val date = c.getLong(iDate)

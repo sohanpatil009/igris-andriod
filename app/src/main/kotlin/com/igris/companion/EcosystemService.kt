@@ -91,6 +91,17 @@ class EcosystemService : Service() {
                 } catch (_: Throwable) {
                 }
             }
+            // Backstop for the grab watchdog (the a11y service runs its own
+            // at 1s): catches dropped tile-initiated launches and requests
+            // that outlive an a11y-service restart.
+            try {
+                if (com.igris.companion.accessibility.SyncFallbackNotifier
+                        .checkBlockedGrab(applicationContext, System.currentTimeMillis(), 5_000L)
+                ) {
+                    android.util.Log.w("IGRIS", "grab launch dropped; tap-to-sync prompt posted")
+                }
+            } catch (_: Throwable) {
+            }
             delay(15_000)
         }
     }

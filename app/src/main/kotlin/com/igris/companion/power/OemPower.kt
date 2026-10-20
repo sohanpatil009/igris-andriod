@@ -21,7 +21,8 @@ import android.util.Log
  *     fall back to the app-details screen on any unrecognized ROM, so a wrong or
  *     outdated entry is never fatal.
  *
- * ComponentNames follow the well-known dontkillmyapp.com set; validate per ROM.
+ * Component entry points are validated per ROM; unknown entries always fall
+ * back to the app-details screen.
  */
 object OemPower {
     private const val TAG = "IGRIS"
@@ -65,6 +66,38 @@ object OemPower {
 
     /** True when we ship OEM-specific autostart deep-links for this device. */
     fun hasOemAutostart(): Boolean = autostartCandidates().isNotEmpty()
+
+    /** True on MIUI/HyperOS devices, where an extra "background pop-up"
+     *  permission gate silently blocks background activity launches. */
+    fun isMiuiFamily(): Boolean = isAny("xiaomi", "redmi", "poco")
+
+    /**
+     * Open the MIUI/HyperOS per-app permission editor, where the "Display
+     * pop-up windows while running in background" toggle lives (the gate that
+     * silently drops background activity launches — including IGRIS's
+     * transparent clipboard grab). Falls back to app details.
+     */
+    fun openBackgroundPopupSettings(context: Context) {
+        val pkg = context.packageName
+        val candidates = listOf(
+            Intent("miui.intent.action.APP_PERM_EDITOR")
+                .setClassName(
+                    "com.miui.securitycenter",
+                    "com.miui.permcenter.permissions.PermissionsEditorActivity",
+                )
+                .putExtra("extra_package_name", pkg),
+            Intent("miui.intent.action.APP_PERM_EDITOR")
+                .setClassName(
+                    "com.miui.securitycenter",
+                    "com.miui.permcenter.permissions.AppPermissionsEditorActivity",
+                )
+                .putExtra("extra_package_name", pkg),
+        )
+        for (intent in candidates) {
+            if (launch(context, intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))) return
+        }
+        openAppDetails(context)
+    }
 
     /**
      * Open the OEM autostart / background-launch allowlist. Tries each known

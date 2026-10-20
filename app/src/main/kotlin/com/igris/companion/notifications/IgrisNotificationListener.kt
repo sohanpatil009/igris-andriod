@@ -267,6 +267,17 @@ class IgrisNotificationListener : NotificationListenerService() {
             val channel = n.channelId ?: ""
             if (channel.contains("MediaOngoingActivity")) return false
         }
+
+        // Filter notifications likely containing OTPs or verification codes
+        val title = n.extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: ""
+        val text = n.extras.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: ""
+        val combined = "$title $text"
+        val otpPattern = Regex("\\b\\d{4,8}\\b")
+        val sensitiveWords = listOf("verification code", "otp", "one-time", "passcode", "security code", "auth code")
+        if (sensitiveWords.any { combined.contains(it, ignoreCase = true) }) return false
+        // Don't block short numeric sequences that appear in normal messages
+        if (combined.contains(otpPattern) && combined.length < 80) return false
+
         return true
     }
 

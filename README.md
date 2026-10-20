@@ -1,23 +1,28 @@
 # igris-android
 
 Native Android companion for the **IGRIS** device ecosystem — a local-first,
-no-cloud mesh that syncs **clipboard**, **notifications**, and **files**
-between your phone and your desktops over the LAN. The Kotlin app drives the
-same Rust protocol core the desktop uses ([`igris-protocol`](../igris-protocol)),
-via UniFFI, so both sides speak an identical wire protocol.
+no-cloud mesh that syncs **clipboard**, **notifications**, **files**,
+**calls**, and **SMS** between your phone and your desktops over the LAN.
+The Kotlin app drives the same Rust protocol core the desktop uses
+([`igris-protocol`](../igris-protocol)) via UniFFI, so both sides speak an
+identical wire protocol.
 
 - Desktop app: [`igris-ecosystem`](../igris-ecosystem) (Rust/Dioxus, Windows/macOS/Linux)
-- Shared protocol crate: [`igris-protocol`](../igris-protocol) (eco REST + FastSwap native v1)
-- Ports: eco HTTP **53327** / TLS **53328**, FastSwap HTTP **53317** / TLS **53318**
+- Shared protocol crate: [`igris-protocol`](../igris-protocol) (eco REST + FastSwap native v1 + LAN audio)
+- Ports: eco HTTP **53327** / TLS **53328**, FastSwap HTTP **53317** / TLS **53318**, LAN call audio TCP **53329** (the phone listens)
 
 ## Stack
 
 | Layer | Choice |
 |---|---|
-| UI | Kotlin + Jetpack Compose, Material 3 |
+| UI | Kotlin + Jetpack Compose, Material 3 (tabs: Devices, Calls, Clipboard, Notifications, Transfers, Settings) |
 | Core | `igris-protocol` Rust crate via UniFFI/JNA (`.so` for arm64-v8a, armeabi-v7a, x86_64, built with `cargo ndk`, NDK 29) |
 | Build | AGP 8.7.3, Kotlin 2.1.21, Gradle 8.13, minSdk 26, targetSdk 35 |
 | Persistence | DataStore (device identity), files (trust store, a11y diagnostics) |
+
+The Gradle build compiles the Rust core for all three ABIs and regenerates
+the Kotlin UniFFI bindings on every build (`cargoNdkBuild` → `copyRustLibs`
++ `generateUniffi` → `preBuild`).
 
 ## Features
 
@@ -39,13 +44,16 @@ any one of which is enough:
 | Opening the app | manual | 1s foreground poll |
 
 All automatic triggers raise `ClipboardGrabActivity` — a transparent 1×1
-activity (KDE Connect's approach) that claims focus, reads the clipboard
+activity (the KDE Connect approach) that claims focus, reads the clipboard
 (450 ms settle delay + one late re-read ~1.1 s later for slow-committing
 apps), pushes into the Rust fan-out, and finishes. Clips marked
-`EXTRA_IS_SENSITIVE` (password managers) are never synced.
+`EXTRA_IS_SENSITIVE` (password managers) are never synced. The reverse
+direction uses `ClipboardSetActivity` — a transparent activity that makes
+background clipboard writes legal on Android 10+.
 
 Undelivered pushes are retried at most every 10 s (rate-limited so an
-offline peer can't cause a 1 Hz push loop).
+offline peer can't cause a 1 Hz push loop). Media clipboard (base64) is
+supported behind the config flag.
 
 ### Discovery
 - Periodic /24 subnet scan on eco ports across **all local IPv4 interfaces**
@@ -60,17 +68,50 @@ offline peer can't cause a 1 Hz push loop).
 
 ### File transfer (FastSwap native v1)
 Igris native: `register → prepare-upload → confirm-upload
-(60 s approval) → upload`, 64 KB chunks, self-signed TLS, 10 GiB limit,
-path sanitization, MediaStore/Downloads save on receive.
+(60 s approval) → upload`, 64 KB chunks, self-signed TLS, 10 GiB limit, path
+sanitization, MediaStore/Downloads save on receive, per-session progress and
+cancellation. Legacy `/api/localsend/v2/*` route aliases keep older peers
+interoperable.
 
 ### Notification sync
 `NotificationListenerService` mirrors notifications to linked peers
-(`/notification/sync`) with reply forwarding (`/notification/reply`) and
-dedup.
+(`/notification/sync`) with reply forwarding (`/notification/reply`),
+remote action buttons (`/notification/action`), and dismiss mirroring
+(`/notification/dismiss`). Notifications are keyed by
+`StatusBarNotification.key` (updates dedupe in place) and carry base64
+app icons (≤96 px) with MD5 hash-skips. Incoming mirrored notifications are
+posted as system notifications with inline reply where supported
+(`MirrorReplyReceiver`).
+
+### Calls & SMS (enterprise, opt-in)
+- `CallSmsBridge` observes phone state (`TelephonyCallback` on Android 12+,
+  `PhoneStateListener` below) and pushes call events
+  (ringing / dialing / talking / ended) into the core, which fans them out
+  to linked peers.
+- Remote call control from the desktop sails back over `/call/action`:
+  accept, decline, mute, end, dial — executed against the telecom stack.
+- Call history is mirrored to the desktop each time the service starts (`/call/log/sync`, sent once the node finishes booting).
+- SMS: the desktop asks the phone to transmit via its SIM
+  (`onSmsSendRequested` → `SmsManager`, multipart-aware); mirrored SMS from
+  peers surface through `onSmsReceived`.
+- Contacts: `ContactProvider` exposes the phonebook
+  (`READ_CONTACTS`, opt-in) so the desktop dial pad can search it.
+
+### LAN call audio
+The phone runs the **listener** role of the raw duplex audio link
+(`AudioEngine`): `AudioRecord` captures 48 kHz mono s16 in 10 ms frames and
+pushes them into the Rust node; peer frames arrive through
+`onAudioFrame` and play on a media-routed `AudioTrack` with a bounded
+jitter buffer (250 frames, drop-on-full). Sessions open/close on the node's
+`onAudioStreamState`. Trust-gated: only linked peers' IPs are accepted.
+On the desk the same link runs in the initiator role (cpal/rodio).
 
 ### Keep-alive
-Foreground service (`connectedDevice`), tiered wake locks, AlarmManager
-watchdog, boot receiver, OEM battery-optimization exemption.
+Foreground service (`connectedDevice` FGS — no Android 14 6 h/day cap,
+restartable from boot/background on Android 15), tiered wake locks
+(CPU + WiFi only while ≥1 mobile peer is online), AlarmManager watchdog,
+boot receiver (`RestartReceiver`), and OEM battery-optimization exemption
+request.
 
 ## Build
 
@@ -79,9 +120,12 @@ watchdog, boot receiver, OEM battery-optimization exemption.
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
+Requires `ANDROID_HOME`/`ANDROID_SDK_ROOT` and NDK 29
+(`ANDROID_NDK_HOME`, defaulting to `$ANDROID_SDK_ROOT/ndk/29.0.14206865`).
+
 ## Post-install setup (one-time, per device)
 
-The first-run onboarding screen (and the Settings tab afterwards) now walks
+The first-run onboarding screen (and the Settings tab afterwards) walks
 through accessibility, **display over other apps**, notifications and
 battery in-app — no adb required for a normal install. **Display over other
 apps** is the one that's easy to miss manually: without it, the phone can
@@ -100,7 +144,11 @@ adb shell dumpsys deviceidle whitelist +com.igris.companion
 ```
 
 Then: grant notification access in Settings, disable battery optimization
-for IGRIS, and add the **Sync clipboard** Quick Settings tile.
+for IGRIS, and add the **Sync clipboard** Quick Settings tile. Calls/SMS
+features additionally need the opt-in runtime grants (phone state,
+call log, contacts, SMS) — the app requests these from the Calls tab /
+Settings, and everything works without them if you only want
+clipboard/notifications/files.
 
 ### OEM quirks (field notes)
 
@@ -112,8 +160,8 @@ for IGRIS, and add the **Sync clipboard** Quick Settings tile.
 - **Funtouch/OriginOS (Vivo/iQOO, verified on iQOO I2501)**: delivers toast
   events; aggressive background-app killing — keep the battery whitelist.
 - **General**: if sync stops, check (1) accessibility toggle, (2) duplicate
-  desktop instances (a second instance silently binds 53329+ and becomes
-  invisible to scanners), (3) both devices on the same subnet.
+  desktop instances (the desktop now focuses its running window instead of
+  launching a second, silent instance), (3) both devices on the same subnet.
 
 ## Debugging
 
@@ -121,7 +169,7 @@ for IGRIS, and add the **Sync clipboard** Quick Settings tile.
 # a11y service log (triggers, event trace, per-event-type histogram)
 adb shell run-as com.igris.companion cat files/a11y.log
 
-# Rust core logs (discovery, clipboard fan-out, transfers)
+# Rust core logs (discovery, clipboard fan-out, transfers, calls, audio)
 adb logcat -s IGRIS
 ```
 

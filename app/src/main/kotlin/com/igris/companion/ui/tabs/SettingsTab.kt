@@ -88,6 +88,21 @@ fun SettingsTab() {
                 Text(if (a11yEnabled) "Accessibility: ON (tap to open)" else "Enable accessibility")
             }
         }
+        if (OemPower.isMiuiFamily()) {
+            Text(
+                "On ${OemPower.oemLabel()}, also allow background pop-ups for " +
+                    "this app — otherwise copies made while IGRIS is in the " +
+                    "background are silently blocked and you'll get a " +
+                    "tap-to-sync notification instead of automatic sync.",
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(top = 8.dp),
+            )
+            Row(Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                Button(onClick = { OemPower.openBackgroundPopupSettings(context) }) {
+                    Text("Allow background pop-ups")
+                }
+            }
+        }
 
         Text(
             "Receiving clipboard from your other devices",

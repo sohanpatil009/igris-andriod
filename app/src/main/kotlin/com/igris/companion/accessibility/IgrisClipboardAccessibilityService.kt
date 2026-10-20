@@ -45,13 +45,24 @@ class IgrisClipboardAccessibilityService : AccessibilityService() {
     private var lastGestureMs: Long = 0
     private val eventCounts = java.util.concurrent.ConcurrentHashMap<Int, Int>()
 
+    /** Selection seen on the previous poll tick; pushed only when stable for
+     *  two ticks, so mere highlights dismissed without a copy don't sync. */
+    private var pendingSelection: String? = null
+
     private val logFile: File by lazy { File(filesDir, "a11y.log") }
 
     private fun logLine(msg: String) {
         Log.w("IGRIS", msg)
         try {
-            logFile.appendText("${System.currentTimeMillis()} $msg\n")
-        } catch (e: Exception) {
+            val f = logFile
+            // Cap at 1MB — truncate oldest half when exceeded
+            if (f.exists() && f.length() > 1_048_576) {
+                val lines = f.readLines()
+                val keep = lines.drop(lines.size / 2)
+                f.writeText(keep.joinToString("\n") + "\n")
+            }
+            f.appendText("${System.currentTimeMillis()} $msg\n")
+        } catch (_: Exception) {
         }
     }
 
@@ -106,12 +117,9 @@ class IgrisClipboardAccessibilityService : AccessibilityService() {
             lastGestureMs = now
         }
         logLine("a11y det: copy gesture ($reason) pkg=${event.packageName}")
-        if (com.igris.companion.ForegroundState.isForeground) {
-            // Focused: direct read is allowed, no grab needed.
-            onClipboardChanged()
-        } else {
-            launchGrabActivity()
-        }
+        // Try a direct read first; if the OS denies it (background), the
+        // onClipboardChanged path raises the grab activity instead.
+        onClipboardChanged()
     }
 
     /**
@@ -156,6 +164,7 @@ class IgrisClipboardAccessibilityService : AccessibilityService() {
                 logLine("a11y read denied/empty (x$denyCount)")
             }
             captureSelection()
+            checkGrabOutcome()
             if (++tickCount % 30 == 0 && eventCounts.isNotEmpty()) {
                 // Event-delivery histogram every ~30s: proves whether HyperOS
                 // is actually delivering a11y events to this background
@@ -172,11 +181,12 @@ class IgrisClipboardAccessibilityService : AccessibilityService() {
         if (text.isNullOrEmpty()) {
             // Android 10+ (and MIUI): background reads are denied. Igris
             // trick: raise a tiny transparent activity to claim foreground,
-            // read there, then it finishes itself.
-            if (!com.igris.companion.ForegroundState.isForeground) {
-                logLine("a11y: clip changed in background — launching grab activity")
-                launchGrabActivity()
-            }
+            // read there, then it finishes itself. No ForegroundState gate
+            // here — if the direct read was denied, the grab is needed no
+            // matter what the lifecycle tracker believes (and a false
+            // "foreground" belief would otherwise strand the copy).
+            logLine("a11y: direct read denied/empty — launching grab activity")
+            launchGrabActivity()
             return
         }
         if (text == lastPushed) return
@@ -190,6 +200,10 @@ class IgrisClipboardAccessibilityService : AccessibilityService() {
         val now = System.currentTimeMillis()
         if (now - lastGrabLaunchMs < 900) return
         lastGrabLaunchMs = now
+        // Bookkeeping for the watchdog: if this launch never actually
+        // appears (MIUI/HyperOS silently drop background activity starts),
+        // checkGrabOutcome() posts a tap-to-sync notification instead.
+        SyncFallbackNotifier.markGrabRequested(this, now)
         try {
             val intent = android.content.Intent(this, ClipboardGrabActivity::class.java)
                 .addFlags(
@@ -199,6 +213,19 @@ class IgrisClipboardAccessibilityService : AccessibilityService() {
             startActivity(intent)
         } catch (e: Exception) {
             logLine("grab launch failed: $e")
+        }
+    }
+
+    /**
+     * Watches the last grab request every poll tick. When the OS dropped the
+     * background launch (request unanswered past the grace window), fall back
+     * to the tap-to-sync notification — tapping a notification is exempt
+     * from background-activity-launch restrictions on every OEM.
+     */
+    private fun checkGrabOutcome() {
+        val now = System.currentTimeMillis()
+        if (SyncFallbackNotifier.checkBlockedGrab(this, now, GRAB_LAUNCH_GRACE_MS)) {
+            logLine("a11y: grab launch dropped by OS — tap-to-sync prompt posted")
         }
     }
 
@@ -224,6 +251,8 @@ class IgrisClipboardAccessibilityService : AccessibilityService() {
             val node = NodeHolder.node ?: return
             node.pushClipboard(text)
             lastPushed = text
+            // Any successful sync clears a stale tap-to-sync prompt.
+            SyncFallbackNotifier.cancel(this)
             // Dedup-on-failed-send fix: if the fan-out reached no peer (peer
             // offline), arm a retry so the next 1s poll re-pushes the same
             // text once a peer is reachable — no user re-selection needed.
@@ -263,9 +292,18 @@ class IgrisClipboardAccessibilityService : AccessibilityService() {
             if (start !in 0..end || end <= start || end > text.length) return
             val selected = text.substring(start, end)
             if (selected.isNotEmpty() && selected != lastPushed) {
-                lastPushed = selected
-                logLine("a11y sel: ${selected.take(24)}")
-                push(selected)
+                if (selected == pendingSelection) {
+                    // Same selection as the previous tick: a real copy-hold,
+                    // not a transient highlight.
+                    pendingSelection = null
+                    lastPushed = selected
+                    logLine("a11y sel: ${selected.take(24)}")
+                    push(selected)
+                } else {
+                    pendingSelection = selected
+                }
+            } else {
+                pendingSelection = null
             }
         } catch (e: Exception) {
             logLine("a11y capture err: $e")
@@ -287,5 +325,8 @@ class IgrisClipboardAccessibilityService : AccessibilityService() {
     private companion object {
         /** Minimum spacing between gesture-triggered grabs. */
         const val GESTURE_THROTTLE_MS = 1000L
+
+        /** How long a grab launch may take before it counts as OS-dropped. */
+        const val GRAB_LAUNCH_GRACE_MS = 3000L
     }
 }

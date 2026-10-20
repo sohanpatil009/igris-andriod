@@ -11,7 +11,6 @@ plugins {
 val igrisProtocolDir = rootProject.file("../igris-protocol")
 val androidSdkRoot = providers.environmentVariable("ANDROID_HOME")
     .orElse(providers.environmentVariable("ANDROID_SDK_ROOT"))
-    .orElse("C:/Users/prath/AppData/Local/Android/Sdk")
 val ndkRoot = providers.environmentVariable("ANDROID_NDK_HOME")
     .orElse(androidSdkRoot.map { "$it/ndk/29.0.14206865" })
 
@@ -89,7 +88,11 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 
@@ -121,6 +124,7 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.9.3")
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-process:2.8.7")
     implementation("androidx.lifecycle:lifecycle-service:2.8.7")
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation("net.java.dev.jna:jna:5.16.0@aar")

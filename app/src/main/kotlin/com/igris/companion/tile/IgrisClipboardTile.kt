@@ -32,6 +32,10 @@ class IgrisClipboardTile : TileService() {
         // The node may not be up (fresh boot, service killed); the grab
         // activity retries its push while the node boots.
         NodeHolder.start(this)
+        // Bookkeeping: if even this user-initiated launch is dropped by the
+        // OS, the watchdog posts the tap-to-sync notification instead.
+        com.igris.companion.accessibility.SyncFallbackNotifier
+            .markGrabRequested(this, System.currentTimeMillis())
         val intent = Intent(this, ClipboardGrabActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         if (Build.VERSION.SDK_INT >= 34) {

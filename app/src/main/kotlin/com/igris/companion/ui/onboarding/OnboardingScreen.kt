@@ -211,6 +211,23 @@ fun OnboardingScreen(
             )
         }
 
+        if (OemPower.isMiuiFamily()) {
+            PermissionCard(
+                index = 7,
+                title = "Background pop-up (${OemPower.oemLabel()})",
+                required = false,
+                description = "Unlocks fully automatic clipboard sync while IGRIS " +
+                    "runs in the background. Without it, your phone silently " +
+                    "blocks IGRIS from checking what you copied — you'd have to " +
+                    "tap a small notification to sync each copy instead.",
+                granted = null, // MIUI exposes no readable state; it's action-only.
+                actionLabel = "Open permission page",
+                note = "Enable \"Display pop-up windows while running in " +
+                    "background\", then tap Back.",
+                onAction = { OemPower.openBackgroundPopupSettings(context) },
+            )
+        }
+
         Spacer(Modifier.height(8.dp))
 
         if (!a11y || !overlay || !listener) {

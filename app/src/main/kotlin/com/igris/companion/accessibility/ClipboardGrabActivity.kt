@@ -30,8 +30,20 @@ class ClipboardGrabActivity : Activity() {
     private val handler = android.os.Handler(android.os.Looper.getMainLooper())
     private var lastPushedText: String? = null
 
+    /** True when the user opened this from the tap-to-sync notification. */
+    private var fromFallback = false
+
+    /** Window focus arrived at least once (a launched-but-never-shown
+     *  activity means the OEM half-blocked us — notify instead of silence). */
+    private var hadFocus = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        fromFallback = intent?.getBooleanExtra(
+            SyncFallbackNotifier.EXTRA_FROM_FALLBACK, false,
+        ) ?: false
+        // Report back to the watchdog: this launch made it through.
+        SyncFallbackNotifier.markGrabLaunched(this, System.currentTimeMillis())
         // Cold-boot path (tile tapped right after install/reboot): kick the
         // node ourselves instead of relying on the a11y service rebinding.
         NodeHolder.start(applicationContext)
@@ -42,11 +54,22 @@ class ClipboardGrabActivity : Activity() {
             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
             WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
         window.attributes = wlp
+        // Launched but the OS never brought us to front (partial MIUI block):
+        // the focus callback never fires, so the clipboard would never be
+        // read. Prompt the one-tap path instead of failing silently.
+        handler.postDelayed({
+            if (!hadFocus && !isFinishing && !fromFallback) {
+                logLine("grab: launched but never focused — posting tap-to-sync")
+                SyncFallbackNotifier.notifyTapToSync(this)
+                finish()
+            }
+        }, 2500)
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (!hasFocus) return
+        hadFocus = true
 
         // Gesture-triggered grabs race the copy commit; give the source app
         // a beat to finish writing the clip before reading.
@@ -55,10 +78,23 @@ class ClipboardGrabActivity : Activity() {
 
     private fun readAndPush() {
         when (val clip = readClip()) {
-            ReadResult.Denied, ReadResult.Sensitive ->
-                // Sensitive clips are never synced (hash-skip guard); denied
-                // means nothing to do from this vantage either.
-                if (clip == ReadResult.Sensitive) logLine("grab: sensitive clip, skipping")
+            ReadResult.Denied ->
+                if (fromFallback) {
+                    logLine("grab: read denied even focused")
+                    SyncFallbackNotifier.notifyUnavailable(
+                        this,
+                        "Your phone blocked the read this time — copy again and retry.",
+                    )
+                }
+            ReadResult.Sensitive ->
+                // Sensitive clips are never synced (privacy guard).
+                if (fromFallback) {
+                    logLine("grab: sensitive clip, stayed on phone")
+                    SyncFallbackNotifier.notifyUnavailable(
+                        this,
+                        "That copy looked sensitive (like a password), so it stayed on this phone.",
+                    )
+                }
             is ReadResult.Text ->
                 if (clip.value.isNotEmpty() && clip.value != lastPushedText) {
                     lastPushedText = clip.value
@@ -88,6 +124,7 @@ class ClipboardGrabActivity : Activity() {
             handler.postDelayed({ if (!isFinishing) reReadOrFinish(attempt + 1) }, 1000)
             return
         }
+        SyncFallbackNotifier.clearGrabRequest(this)
         finish()
     }
 
@@ -117,17 +154,42 @@ class ClipboardGrabActivity : Activity() {
             for (i in 1..30) {
                 val node = NodeHolder.node
                 if (node != null) {
+                    var pushed = false
                     try {
                         node.pushClipboard(text)
+                        pushed = true
                         logLine("grab: pushed ${text.take(16)}")
                     } catch (e: Exception) {
                         logLine("grab: push failed: $e")
+                    }
+                    if (pushed) {
+                        SyncFallbackNotifier.clearGrabRequest(this)
+                        if (fromFallback) {
+                            // Confirm the one-tap sync; report honestly when
+                            // no peer was online to receive it.
+                            Thread.sleep(500)
+                            val delivered = try {
+                                node.clipboardDelivered()
+                            } catch (e: Exception) {
+                                true
+                            }
+                            SyncFallbackNotifier.notifyResult(this, delivered)
+                        } else {
+                            // Auto-path sync succeeded; drop any stale prompt.
+                            SyncFallbackNotifier.cancel(this)
+                        }
                     }
                     return@Thread
                 }
                 Thread.sleep(400)
             }
             logLine("grab: node never came up")
+            if (fromFallback) {
+                SyncFallbackNotifier.notifyUnavailable(
+                    this,
+                    "IGRIS is still starting up — try again in a moment.",
+                )
+            }
         }.start()
     }
 
